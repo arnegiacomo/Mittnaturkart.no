@@ -18,9 +18,45 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Check for frontend changes
+        id: frontend_changes
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -q '^frontend/'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check for backend changes
+        id: backend_changes
+        run: |
+          if git diff --name-only HEAD~1 HEAD | grep -q '^backend/'; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build frontend
+        if: steps.frontend_changes.outputs.changed == 'true'
+        run: |
+          echo "Building frontend..."
+          export VERSION=$(cat VERSION 2>/dev/null || echo "1.0.0")
+          cd docker
+          docker compose build frontend
+
+      - name: Build backend
+        if: steps.backend_changes.outputs.changed == 'true'
+        run: |
+          echo "Building backend..."
+          export VERSION=$(cat VERSION 2>/dev/null || echo "1.0.0")
+          cd docker
+          docker compose build backend
 
       - name: Run tests
         run: ./test.sh

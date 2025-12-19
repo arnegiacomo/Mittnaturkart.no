@@ -39,7 +39,7 @@ services:
     environment:
       BACKEND_PORT: 8000
     volumes:
-      - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./nginx/nginx.test.conf.template:/etc/nginx/templates/default.conf.template:ro
     depends_on:
       - backend
 
