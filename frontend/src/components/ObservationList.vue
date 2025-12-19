@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -10,6 +10,7 @@ import { useConfirm } from 'primevue/useconfirm'
 import ObservationForm from './ObservationForm.vue'
 import { useObservationStore } from '../stores/observations'
 import type { Observation } from '../types'
+import type { DataTablePageEvent } from 'primevue/datatable'
 
 const store = useObservationStore()
 const toast = useToast()
@@ -17,6 +18,24 @@ const confirm = useConfirm()
 
 const showDialog = ref(false)
 const editingObservation = ref<Observation | null>(null)
+const rows = ref(10)
+const first = ref(0)
+const initialLoading = ref(true)
+
+onMounted(async () => {
+  await loadObservations()
+  initialLoading.value = false
+})
+
+async function loadObservations() {
+  await store.fetchObservations(first.value, rows.value)
+}
+
+function onPage(event: DataTablePageEvent) {
+  first.value = event.first
+  rows.value = event.rows
+  loadObservations()
+}
 
 function handleCreate() {
   editingObservation.value = null
@@ -38,6 +57,7 @@ function handleDelete(observation: Observation) {
     accept: async () => {
       try {
         await store.deleteObservation(observation.id!)
+        await loadObservations()
         toast.add({
           severity: 'success',
           summary: 'Slettet',
@@ -81,10 +101,14 @@ function formatCoordinates(lat: number, lon: number) {
 
     <DataTable
       :value="store.observations"
-      :loading="store.loading"
+      :loading="initialLoading"
       stripedRows
+      lazy
       paginator
-      :rows="10"
+      :rows="rows"
+      :totalRecords="store.totalRecords"
+      :first="first"
+      @page="onPage"
       tableStyle="min-width: 50rem"
       class="observation-table"
     >
@@ -136,6 +160,7 @@ function formatCoordinates(lat: number, lon: number) {
     <ObservationForm
       v-model:visible="showDialog"
       :observation="editingObservation"
+      @saved="loadObservations"
     />
   </div>
 </template>
@@ -149,6 +174,10 @@ function formatCoordinates(lat: number, lon: number) {
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.observation-table :deep(tbody) {
+  transition: opacity 0.2s ease-in-out;
 }
 
 .empty-state {

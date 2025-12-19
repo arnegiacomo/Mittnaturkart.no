@@ -18,6 +18,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:visible': [value: boolean]
+  'saved': []
 }>()
 
 const store = useObservationStore()
@@ -88,6 +89,7 @@ async function handleSubmit() {
         life: 3000
       })
     }
+    emit('saved')
     emit('update:visible', false)
     resetForm()
   } catch {

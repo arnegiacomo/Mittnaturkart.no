@@ -73,10 +73,14 @@ def test_get_all_observations():
     response = requests.get(f"{API_URL}/api/v1/observations")
     assert response.status_code == 200, f"Get all failed: {response.status_code}"
     data = response.json()
-    assert isinstance(data, list)
-    assert len(data) > 0
-    print(f"✓ Retrieved {len(data)} observation(s)")
-    return data
+    assert isinstance(data, dict), "Response should be a dict with 'data' and 'total' keys"
+    assert "data" in data, "Response should have 'data' key"
+    assert "total" in data, "Response should have 'total' key"
+    assert isinstance(data["data"], list)
+    assert len(data["data"]) > 0
+    assert data["total"] > 0
+    print(f"✓ Retrieved {len(data['data'])} observation(s) out of {data['total']} total")
+    return data["data"]
 
 def test_get_observation(observation_id):
     print("\n--- Testing Get Single Observation ---")

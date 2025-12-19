@@ -1,13 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
 import ObservationList from './components/ObservationList.vue'
-import { useObservationStore } from './stores/observations'
-
-const store = useObservationStore()
-
-onMounted(() => {
-  store.fetchObservations()
-})
 </script>
 
 <template>

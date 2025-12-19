@@ -3,14 +3,15 @@ from sqlalchemy.orm import Session
 from typing import List
 from ..database import get_db
 from ..models import Observation as ObservationModel
-from ..schemas import Observation, ObservationCreate, ObservationUpdate
+from ..schemas import Observation, ObservationCreate, ObservationUpdate, PaginatedResponse
 
 router = APIRouter(prefix="/observations", tags=["observations"])
 
-@router.get("", response_model=List[Observation])
+@router.get("", response_model=PaginatedResponse[Observation])
 def get_observations(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    observations = db.query(ObservationModel).offset(skip).limit(limit).all()
-    return observations
+    total = db.query(ObservationModel).count()
+    observations = db.query(ObservationModel).order_by(ObservationModel.id.desc()).offset(skip).limit(limit).all()
+    return {"data": observations, "total": total}
 
 @router.get("/{observation_id}", response_model=Observation)
 def get_observation(observation_id: int, db: Session = Depends(get_db)):

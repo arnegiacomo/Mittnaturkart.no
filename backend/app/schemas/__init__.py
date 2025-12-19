@@ -1,3 +1,3 @@
-from .observation import Observation, ObservationCreate, ObservationUpdate
+from .observation import Observation, ObservationCreate, ObservationUpdate, PaginatedResponse
 
-__all__ = ["Observation", "ObservationCreate", "ObservationUpdate"]
+__all__ = ["Observation", "ObservationCreate", "ObservationUpdate", "PaginatedResponse"]

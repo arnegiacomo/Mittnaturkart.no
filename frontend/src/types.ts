@@ -9,3 +9,8 @@ export interface Observation {
   created_at?: string
   updated_at?: string
 }
+
+export interface PaginatedResponse<T> {
+  data: T[]
+  total: number
+}

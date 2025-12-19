@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List, Generic, TypeVar
 
 class ObservationBase(BaseModel):
     species: str
@@ -28,3 +28,9 @@ class Observation(ObservationBase):
 
     class Config:
         from_attributes = True
+
+T = TypeVar('T')
+
+class PaginatedResponse(BaseModel, Generic[T]):
+    data: List[T]
+    total: int

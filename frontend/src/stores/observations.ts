@@ -5,20 +5,19 @@ import type { Observation } from '../types'
 
 export const useObservationStore = defineStore('observations', () => {
   const observations = ref<Observation[]>([])
+  const totalRecords = ref(0)
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  async function fetchObservations() {
-    loading.value = true
+  async function fetchObservations(skip: number = 0, limit: number = 10) {
     error.value = null
     try {
-      const response = await observationApi.getAll()
-      observations.value = response.data
+      const response = await observationApi.getAll(skip, limit)
+      observations.value = response.data.data
+      totalRecords.value = response.data.total
     } catch (e) {
       error.value = 'Kunne ikke laste observasjoner'
       console.error(e)
-    } finally {
-      loading.value = false
     }
   }
 
@@ -72,6 +71,7 @@ export const useObservationStore = defineStore('observations', () => {
 
   return {
     observations,
+    totalRecords,
     loading,
     error,
     fetchObservations,
