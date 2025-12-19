@@ -18,8 +18,8 @@ services:
 
   backend-test:
     build:
-      context: ../backend
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: backend/Dockerfile
     container_name: mittnaturkart-test-backend
     environment:
       POSTGRES_DB: mittnaturkart_test

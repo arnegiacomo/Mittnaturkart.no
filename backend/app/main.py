@@ -1,8 +1,20 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from .routes.observations import router as observations_router
+from pathlib import Path
 
-app = FastAPI(title="Mittnaturkart API", version="1.0.0")
+def get_version():
+    version_file = Path(__file__).parent.parent / "VERSION"
+    if not version_file.exists():
+        version_file = Path(__file__).parent.parent.parent / "VERSION"
+    try:
+        return version_file.read_text().strip()
+    except FileNotFoundError:
+        return "1.0.0"
+
+VERSION = get_version()
+
+app = FastAPI(title="Mittnaturkart API", version=VERSION)
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,7 +30,7 @@ app.include_router(api_v1_router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to Mittnaturkart API", "version": "1.0.0"}
+    return {"message": "Welcome to Mittnaturkart API", "version": VERSION}
 
 @app.get("/health")
 def health_check():

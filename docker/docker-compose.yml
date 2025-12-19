@@ -29,8 +29,9 @@ services:
 
   backend:
     build:
-      context: ../backend
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: backend/Dockerfile
+    image: mittnaturkart-backend:${VERSION:-latest}
     container_name: mittnaturkart-backend
     restart: unless-stopped
     env_file:
@@ -40,6 +41,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    labels:
+      - "app.version=${VERSION:-unknown}"
     deploy:
       resources:
         limits:
