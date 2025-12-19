@@ -3,7 +3,7 @@ Kildekode til nettstedet mittnaturkart.no
 
 ## Kom i gang
 
-Start applikasjonen:
+Start applikasjonen med Docker:
 ```bash
 ./start.sh
 ```
@@ -11,6 +11,20 @@ Start applikasjonen:
 Stopp applikasjonen:
 ```bash
 ./stop.sh
+```
+
+### Lokal utvikling
+
+Kjør backend lokalt (krever Python 3.12+ og PostgreSQL):
+```bash
+cd backend
+./dev.sh
+```
+
+Kjør frontend lokalt (krever Node.js 20+):
+```bash
+cd frontend
+./dev.sh
 ```
 
 ## Testing
@@ -37,10 +51,11 @@ Versjonsnummer oppdateres automatisk i `VERSION` fil og API. Git-tag (f.eks. `v1
 
 Applikasjonen bruker Nginx som reverse proxy:
 - **Nginx** (port 80): Reverse proxy som håndterer alle innkommende forespørsler
+- **Frontend** (Vue 3 + Vite): Brukergrensesnitt for naturobservasjoner
 - **Backend API** (port 8000): FastAPI backend, tilgjengelig kun via Nginx
 - **PostgreSQL** (port 5432): Database
 
-API er tilgjengelig på `http://localhost/api/v1/...` gjennom Nginx.
+Frontend er tilgjengelig på `http://localhost` og API på `http://localhost/api/v1/...` gjennom Nginx.
 
 ## Konfigurasjon
 
@@ -56,6 +71,9 @@ POSTGRES_PORT=5432
 
 # Backend Configuration
 BACKEND_PORT=8000
+
+# Frontend Configuration
+FRONTEND_PORT=5173
 
 # Nginx Configuration
 NGINX_PORT=80

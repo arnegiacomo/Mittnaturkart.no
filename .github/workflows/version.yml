@@ -47,7 +47,7 @@ jobs:
         if: steps.check_changes.outputs.changed == 'true'
         run: |
           NEW_VERSION=${{ steps.bump.outputs.new_version }}
-          git add VERSION
+          git add VERSION frontend/package.json
           git commit -m "chore(version): bump to $NEW_VERSION [skip ci]"
           git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
           git push origin main

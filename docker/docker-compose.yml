@@ -50,6 +50,24 @@ services:
         reservations:
           memory: 256M
 
+  frontend:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    image: mittnaturkart-frontend:${VERSION:-latest}
+    container_name: mittnaturkart-frontend
+    restart: unless-stopped
+    environment:
+      FRONTEND_PORT: ${FRONTEND_PORT:-5173}
+    labels:
+      - "app.version=${VERSION:-unknown}"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
   nginx:
     image: nginx:alpine
     container_name: mittnaturkart-nginx
@@ -62,6 +80,7 @@ services:
       - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
     depends_on:
       - backend
+      - frontend
     deploy:
       resources:
         limits:

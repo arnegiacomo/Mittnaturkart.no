@@ -44,4 +44,10 @@ echo "New version: $NEW_VERSION"
 
 echo "$NEW_VERSION" > "$VERSION_FILE"
 
+if [ -f "frontend/package.json" ]; then
+    sed -i.bak "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" frontend/package.json
+    rm frontend/package.json.bak
+    echo "Updated frontend/package.json"
+fi
+
 echo "Version bumped from $CURRENT_VERSION to $NEW_VERSION"
