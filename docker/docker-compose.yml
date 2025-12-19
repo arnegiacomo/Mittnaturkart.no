@@ -36,8 +36,8 @@ services:
     restart: unless-stopped
     env_file:
       - ../.env
-    ports:
-      - "${BACKEND_PORT:-8000}:8000"
+    expose:
+      - "${BACKEND_PORT:-8000}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,6 +49,25 @@ services:
           memory: 512M
         reservations:
           memory: 256M
+
+  nginx:
+    image: nginx:alpine
+    container_name: mittnaturkart-nginx
+    restart: unless-stopped
+    environment:
+      BACKEND_PORT: ${BACKEND_PORT:-8000}
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    volumes:
+      - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    depends_on:
+      - backend
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
 volumes:
   postgres-data:

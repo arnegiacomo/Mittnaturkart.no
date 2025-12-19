@@ -21,6 +21,26 @@ def wait_for_api(max_retries=30):
     print("✗ API failed to start")
     return False
 
+def test_nginx_proxy():
+    print("\n--- Testing Nginx Reverse Proxy ---")
+
+    # Test root endpoint through nginx
+    response = requests.get(f"{API_URL}/")
+    assert response.status_code == 200, f"Root endpoint failed: {response.status_code}"
+    data = response.json()
+    assert "version" in data, "Version not found in root response"
+    print(f"✓ Root endpoint accessible (version: {data['version']})")
+
+    # Test that API docs redirect works
+    response = requests.get(f"{API_URL}/docs", allow_redirects=False)
+    assert response.status_code in [200, 301, 302], f"Docs endpoint failed: {response.status_code}"
+    print("✓ API docs endpoint accessible")
+
+    # Verify proxy headers are being set
+    response = requests.get(f"{API_URL}/health")
+    assert response.status_code == 200, "Health check through nginx failed"
+    print("✓ Nginx is properly proxying requests")
+
 def test_health_check():
     print("\n--- Testing Health Check ---")
     response = requests.get(f"{API_URL}/health")
@@ -89,13 +109,14 @@ def test_delete_observation(observation_id):
 
 def run_tests():
     print("=" * 50)
-    print("Starting API CRUD Tests")
+    print("Starting API Tests (via Nginx)")
     print("=" * 50)
 
     if not wait_for_api():
         sys.exit(1)
 
     try:
+        test_nginx_proxy()
         test_health_check()
         observation_id = test_create_observation()
         test_get_all_observations()

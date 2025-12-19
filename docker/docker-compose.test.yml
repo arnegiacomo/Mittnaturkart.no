@@ -16,7 +16,7 @@ services:
       timeout: 3s
       retries: 5
 
-  backend-test:
+  backend:
     build:
       context: ..
       dockerfile: backend/Dockerfile
@@ -27,9 +27,21 @@ services:
       POSTGRES_PASSWORD: test_password
       POSTGRES_HOST: postgres-test
       POSTGRES_PORT: 5432
+    expose:
+      - "8000"
     depends_on:
       postgres-test:
         condition: service_healthy
+
+  nginx:
+    image: nginx:alpine
+    container_name: mittnaturkart-test-nginx
+    environment:
+      BACKEND_PORT: 8000
+    volumes:
+      - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    depends_on:
+      - backend
 
   test-runner:
     build:
@@ -37,7 +49,6 @@ services:
       dockerfile: Dockerfile.test
     container_name: mittnaturkart-test-runner
     environment:
-      API_URL: http://backend-test:8000
+      API_URL: http://nginx
     depends_on:
-      backend-test:
-        condition: service_started
+      - nginx

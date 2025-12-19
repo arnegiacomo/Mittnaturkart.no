@@ -33,6 +33,15 @@ Tester kjøres automatisk ved push til GitHub (unntatt `chore:` commits).
 
 Versjonsnummer oppdateres automatisk i `VERSION` fil og API. Git-tag (f.eks. `v1.0.1`) opprettes automatisk.
 
+## Arkitektur
+
+Applikasjonen bruker Nginx som reverse proxy:
+- **Nginx** (port 80): Reverse proxy som håndterer alle innkommende forespørsler
+- **Backend API** (port 8000): FastAPI backend, tilgjengelig kun via Nginx
+- **PostgreSQL** (port 5432): Database
+
+API er tilgjengelig på `http://localhost/api/v1/...` gjennom Nginx.
+
 ## Konfigurasjon
 
 Opprett en `.env` fil i rotmappen med følgende innhold:
@@ -47,6 +56,9 @@ POSTGRES_PORT=5432
 
 # Backend Configuration
 BACKEND_PORT=8000
+
+# Nginx Configuration
+NGINX_PORT=80
 ```
 
 ---
