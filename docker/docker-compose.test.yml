@@ -1,0 +1,43 @@
+name: mittnaturkart-test
+
+services:
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: mittnaturkart-test-db
+    environment:
+      POSTGRES_DB: mittnaturkart_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test_password
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d mittnaturkart_test"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend-test:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: mittnaturkart-test-backend
+    environment:
+      POSTGRES_DB: mittnaturkart_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_HOST: postgres-test
+      POSTGRES_PORT: 5432
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+
+  test-runner:
+    build:
+      context: ../tests
+      dockerfile: Dockerfile.test
+    container_name: mittnaturkart-test-runner
+    environment:
+      API_URL: http://backend-test:8000
+    depends_on:
+      backend-test:
+        condition: service_started
