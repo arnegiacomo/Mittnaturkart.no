@@ -24,22 +24,23 @@ def wait_for_api(max_retries=30):
 def test_nginx_proxy():
     print("\n--- Testing Nginx Reverse Proxy ---")
 
-    # Test root endpoint through nginx
+    # Test frontend is served at root
     response = requests.get(f"{API_URL}/")
     assert response.status_code == 200, f"Root endpoint failed: {response.status_code}"
-    data = response.json()
-    assert "version" in data, "Version not found in root response"
-    print(f"✓ Root endpoint accessible (version: {data['version']})")
+    assert "text/html" in response.headers.get("Content-Type", ""), "Root should return HTML"
+    print("✓ Frontend accessible at root")
 
-    # Test that API docs redirect works
-    response = requests.get(f"{API_URL}/docs", allow_redirects=False)
-    assert response.status_code in [200, 301, 302], f"Docs endpoint failed: {response.status_code}"
+    # Test that API docs works
+    response = requests.get(f"{API_URL}/docs")
+    assert response.status_code == 200, f"Docs endpoint failed: {response.status_code}"
     print("✓ API docs endpoint accessible")
 
-    # Verify proxy headers are being set
+    # Verify API endpoints work through nginx
     response = requests.get(f"{API_URL}/health")
     assert response.status_code == 200, "Health check through nginx failed"
-    print("✓ Nginx is properly proxying requests")
+    data = response.json()
+    assert data["status"] == "ok"
+    print("✓ Nginx is properly proxying API requests")
 
 def test_health_check():
     print("\n--- Testing Health Check ---")

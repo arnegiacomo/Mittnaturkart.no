@@ -29,10 +29,14 @@ cd frontend
 
 ## Testing
 
-Kjør API-tester:
+Kjør alle tester (API + E2E):
 ```bash
 ./test.sh
 ```
+
+Testene inkluderer:
+- **API-tester**: Tester backend endpoints via Nginx
+- **E2E-tester**: Playwright-baserte tester av frontend (klikk, input, etc.)
 
 Tester kjøres automatisk ved push til GitHub (unntatt `chore:` commits).
 

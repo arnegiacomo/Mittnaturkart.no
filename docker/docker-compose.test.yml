@@ -33,15 +33,22 @@ services:
       postgres-test:
         condition: service_healthy
 
+  frontend:
+    build:
+      context: ..
+      dockerfile: frontend/Dockerfile
+    container_name: mittnaturkart-test-frontend
+
   nginx:
     image: nginx:alpine
     container_name: mittnaturkart-test-nginx
     environment:
       BACKEND_PORT: 8000
     volumes:
-      - ./nginx/nginx.test.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
     depends_on:
       - backend
+      - frontend
 
   test-runner:
     build:
@@ -50,5 +57,13 @@ services:
     container_name: mittnaturkart-test-runner
     environment:
       API_URL: http://nginx
+    depends_on:
+      - nginx
+
+  e2e-runner:
+    build:
+      context: ../tests
+      dockerfile: Dockerfile.e2e
+    container_name: mittnaturkart-test-e2e-runner
     depends_on:
       - nginx

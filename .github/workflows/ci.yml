@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    name: Run API Tests
+    name: Run Tests
     runs-on: ubuntu-latest
 
     if: "!startsWith(github.event.head_commit.message, 'chore:')"
