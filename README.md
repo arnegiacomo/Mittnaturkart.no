@@ -34,4 +34,17 @@ Tester kjøres automatisk ved push til GitHub (unntatt `chore:` commits).
 Versjonsnummer oppdateres automatisk i `VERSION` fil og API. Git-tag (f.eks. `v1.0.1`) opprettes automatisk.
 
 ## Konfigurasjon
-Database-innstillinger plasseres i `.env` filen
+
+Opprett en `.env` fil i rotmappen med følgende innhold:
+
+```env
+# Database Configuration
+POSTGRES_DB=mittnaturkart
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=change_me_in_production
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+
+# Backend Configuration
+BACKEND_PORT=8000
+```
