@@ -13,5 +13,14 @@ Stopp applikasjonen:
 ./stop.sh
 ```
 
+## Testing
+
+Kjør API-tester:
+```bash
+./test.sh
+```
+
+Tester kjøres automatisk ved push til GitHub (unntatt `chore:` commits).
+
 ## Konfigurasjon
 Database-innstillinger plasseres i `.env` filen
