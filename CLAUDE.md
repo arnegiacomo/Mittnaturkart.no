@@ -20,7 +20,6 @@ Key principles:
 File structure:
 - frontend/: Vue app source code
 - backend/: FastAPI source code
-- database/: SQL scripts and migrations
 - docker/: Dockerfiles and Compose configs
 - tests/: Unit and integration tests
 - docs/: Documentation and design notes
