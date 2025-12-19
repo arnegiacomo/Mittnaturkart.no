@@ -48,3 +48,7 @@ POSTGRES_PORT=5432
 # Backend Configuration
 BACKEND_PORT=8000
 ```
+
+---
+
+Bygget med hjelp fra [Claude Code](https://claude.com/product/claude-code)
