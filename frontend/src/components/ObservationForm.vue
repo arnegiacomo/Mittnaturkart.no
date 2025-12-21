@@ -93,6 +93,8 @@ async function handleSubmit() {
         life: 3000
       })
     }
+    // Refresh locations to update observation counts
+    await locationStore.fetchLocations(0, 100)
     emit('saved')
     emit('update:visible', false)
     resetForm()

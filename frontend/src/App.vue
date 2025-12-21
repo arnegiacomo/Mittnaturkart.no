@@ -1,11 +1,26 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import ObservationList from './components/ObservationList.vue'
 import LocationList from './components/LocationList.vue'
+import { useObservationStore } from './stores/observations'
+import { useLocationStore } from './stores/locations'
 
 const activeTab = ref(0)
+const observationStore = useObservationStore()
+const locationStore = useLocationStore()
+
+// Refresh data when switching tabs
+watch(activeTab, async (newTab) => {
+  if (newTab === 0) {
+    // Switching to Observasjoner - refresh observations
+    await observationStore.fetchObservations(0, 10)
+  } else if (newTab === 1) {
+    // Switching to Steder - refresh locations
+    await locationStore.fetchLocations(0, 10)
+  }
+})
 </script>
 
 <template>

@@ -7,11 +7,13 @@ import { useConfirm } from 'primevue/useconfirm'
 import EntityTable from './EntityTable.vue'
 import ObservationForm from './ObservationForm.vue'
 import { useObservationStore } from '../stores/observations'
+import { useLocationStore } from '../stores/locations'
 import type { Observation } from '../types'
 import type { TableColumn } from './EntityTable.vue'
 import type { DataTablePageEvent } from 'primevue/datatable'
 
 const store = useObservationStore()
+const locationStore = useLocationStore()
 const toast = useToast()
 const confirm = useConfirm()
 
@@ -73,6 +75,8 @@ function handleDelete(observation: Observation) {
       try {
         await store.deleteObservation(observation.id!)
         await loadObservations()
+        // Refresh locations to update observation counts
+        await locationStore.fetchLocations(0, 100)
         toast.add({
           severity: 'success',
           summary: 'Slettet',

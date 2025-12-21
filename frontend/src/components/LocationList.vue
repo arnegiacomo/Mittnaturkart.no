@@ -7,11 +7,13 @@ import { useConfirm } from 'primevue/useconfirm'
 import EntityTable from './EntityTable.vue'
 import LocationForm from './LocationForm.vue'
 import { useLocationStore } from '../stores/locations'
+import { useObservationStore } from '../stores/observations'
 import type { LocationWithCount } from '../types'
 import type { TableColumn } from './EntityTable.vue'
 import type { DataTablePageEvent } from 'primevue/datatable'
 
 const store = useLocationStore()
+const observationStore = useObservationStore()
 const toast = useToast()
 const confirm = useConfirm()
 
@@ -85,6 +87,8 @@ function handleDelete(location: LocationWithCount) {
       try {
         await store.deleteLocation(location.id!)
         await loadLocations()
+        // Refresh observations to clear deleted location references
+        await observationStore.fetchObservations(0, 10)
         toast.add({
           severity: 'success',
           summary: 'Slettet',
