@@ -178,6 +178,101 @@ def test_delete_location(location_id):
     assert response.status_code == 404, "Location should not exist after deletion"
     print(f"✓ Deleted location ID: {location_id}")
 
+def test_observation_count_on_location():
+    print("\n--- Testing Observation Count on Location ---")
+
+    location = {
+        "name": "Count Test Location",
+        "latitude": 59.9139,
+        "longitude": 10.7522
+    }
+    response = requests.post(f"{API_URL}/api/v1/locations", json=location)
+    assert response.status_code == 201
+    location_id = response.json()["id"]
+
+    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}")
+    assert response.status_code == 200
+    assert response.json()["observation_count"] == 0, "New location should have 0 observations"
+    print("✓ New location has observation_count = 0")
+
+    observation1 = {
+        "species": "Test Bird 1",
+        "date": datetime.now().isoformat(),
+        "location_id": location_id,
+        "category": "Fugl"
+    }
+    response = requests.post(f"{API_URL}/api/v1/observations", json=observation1)
+    assert response.status_code == 201
+    obs1_id = response.json()["id"]
+
+    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}")
+    assert response.status_code == 200
+    assert response.json()["observation_count"] == 1, "Location should have 1 observation"
+    print("✓ After creating 1 observation, count = 1")
+
+    observation2 = {
+        "species": "Test Bird 2",
+        "date": datetime.now().isoformat(),
+        "location_id": location_id,
+        "category": "Fugl"
+    }
+    response = requests.post(f"{API_URL}/api/v1/observations", json=observation2)
+    assert response.status_code == 201
+    obs2_id = response.json()["id"]
+
+    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}")
+    assert response.status_code == 200
+    assert response.json()["observation_count"] == 2, "Location should have 2 observations"
+    print("✓ After creating 2 observations, count = 2")
+
+    requests.delete(f"{API_URL}/api/v1/observations/{obs1_id}")
+
+    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}")
+    assert response.status_code == 200
+    assert response.json()["observation_count"] == 1, "Location should have 1 observation after deleting one"
+    print("✓ After deleting 1 observation, count = 1")
+
+    requests.delete(f"{API_URL}/api/v1/observations/{obs2_id}")
+    requests.delete(f"{API_URL}/api/v1/locations/{location_id}")
+
+def test_location_deletion_nullifies_observation():
+    print("\n--- Testing Location Deletion Nullifies Observation Location ---")
+
+    location = {
+        "name": "Deletion Test Location",
+        "latitude": 60.0,
+        "longitude": 11.0
+    }
+    response = requests.post(f"{API_URL}/api/v1/locations", json=location)
+    assert response.status_code == 201
+    location_id = response.json()["id"]
+
+    observation = {
+        "species": "Deletion Test Bird",
+        "date": datetime.now().isoformat(),
+        "location_id": location_id,
+        "category": "Fugl"
+    }
+    response = requests.post(f"{API_URL}/api/v1/observations", json=observation)
+    assert response.status_code == 201
+    obs_id = response.json()["id"]
+
+    response = requests.get(f"{API_URL}/api/v1/observations/{obs_id}")
+    assert response.status_code == 200
+    assert response.json()["location_id"] == location_id, "Observation should have location_id"
+    assert response.json()["location"] is not None, "Observation should have location object"
+    print("✓ Observation has location before deletion")
+
+    requests.delete(f"{API_URL}/api/v1/locations/{location_id}")
+
+    response = requests.get(f"{API_URL}/api/v1/observations/{obs_id}")
+    assert response.status_code == 200
+    assert response.json()["location_id"] is None, "Observation location_id should be None after location deletion"
+    assert response.json()["location"] is None, "Observation location should be None after location deletion"
+    print("✓ Observation location_id and location are None after location deletion")
+
+    requests.delete(f"{API_URL}/api/v1/observations/{obs_id}")
+
 def test_observation_sorting():
     print("\n--- Testing Observation Sorting ---")
 
@@ -290,6 +385,12 @@ def run_tests():
 
         # Delete location after observations are deleted
         test_delete_location(location_id)
+
+        # Test observation count on locations
+        test_observation_count_on_location()
+
+        # Test location deletion nullifies observation location
+        test_location_deletion_nullifies_observation()
 
         # Test sorting functionality
         test_observation_sorting()

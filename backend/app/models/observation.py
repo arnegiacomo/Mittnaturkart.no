@@ -9,7 +9,7 @@ class Observation(Base):
     id = Column(Integer, primary_key=True, index=True)
     species = Column(String, nullable=False)
     date = Column(DateTime, nullable=False)
-    location_id = Column(Integer, ForeignKey("locations.id"), nullable=True)
+    location_id = Column(Integer, ForeignKey("locations.id", ondelete="SET NULL"), nullable=True)
     notes = Column(Text, nullable=True)
     category = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)

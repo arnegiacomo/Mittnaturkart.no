@@ -1,18 +1,32 @@
 #!/bin/bash
+set -e
+
+if ! command -v docker &> /dev/null; then
+    echo "Error: docker is not installed"
+    exit 1
+fi
+
+if [ ! -d "docker" ]; then
+    echo "Error: Must be run from project root"
+    exit 1
+fi
 
 export VERSION=$(grep '^version = ' backend/pyproject.toml 2>/dev/null | sed 's/version = "\(.*\)"/\1/' || echo "1.0.0")
 
 cd docker
 
-# Stop if already running
 RUNNING=$(docker compose ps -q 2>/dev/null | wc -l | tr -d ' ')
 if [ "$RUNNING" -gt 0 ]; then
   echo "Stopping existing containers..."
-  docker compose down
+  docker compose down 2>/dev/null || true
   echo ""
 fi
 
-docker compose up -d --build
+if ! docker compose up -d --build; then
+    echo "Error: Failed to start containers"
+    exit 1
+fi
+
 docker compose ps
 
 echo ""
