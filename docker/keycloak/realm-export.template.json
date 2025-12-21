@@ -29,11 +29,9 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${KEYCLOAK_CLIENT_SECRET}",
       "redirectUris": [
-        "http://localhost/*",
         "${FRONTEND_URL}/*"
       ],
       "webOrigins": [
-        "http://localhost",
         "${FRONTEND_URL}"
       ],
       "protocol": "openid-connect",
