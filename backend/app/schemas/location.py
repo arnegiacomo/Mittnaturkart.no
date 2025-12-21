@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class LocationBase(BaseModel):
@@ -27,6 +27,15 @@ class Location(LocationBase):
     id: int
     created_at: datetime
     updated_at: datetime
+
+    @field_validator('created_at', 'updated_at', mode='before')
+    @classmethod
+    def ensure_timezone_aware(cls, v):
+        if isinstance(v, str):
+            return v  # Pydantic handles ISO 8601 parsing
+        if isinstance(v, datetime) and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # Assume UTC if naive
+        return v
 
     class Config:
         from_attributes = True

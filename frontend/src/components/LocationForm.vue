@@ -8,6 +8,9 @@ import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { useLocationStore } from '../stores/locations'
 import type { Location, LocationWithCount } from '../types'
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   visible: boolean
@@ -60,16 +63,16 @@ async function handleSubmit() {
       await store.updateLocation(props.location.id, formData.value)
       toast.add({
         severity: 'success',
-        summary: 'Oppdatert',
-        detail: 'Stedet ble oppdatert',
+        summary: t('toast.success'),
+        detail: t('locations.messages.updated'),
         life: 3000
       })
     } else {
       await store.createLocation(formData.value)
       toast.add({
         severity: 'success',
-        summary: 'Opprettet',
-        detail: 'Stedet ble opprettet',
+        summary: t('toast.success'),
+        detail: t('locations.messages.created'),
         life: 3000
       })
     }
@@ -79,8 +82,8 @@ async function handleSubmit() {
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Feil',
-      detail: 'Kunne ikke lagre stedet',
+      summary: t('toast.error'),
+      detail: t('locations.messages.error_create'),
       life: 3000
     })
   }
@@ -96,13 +99,13 @@ function handleCancel() {
   <Dialog
     :visible="visible"
     @update:visible="emit('update:visible', $event)"
-    :header="location ? 'Rediger sted' : 'Nytt sted'"
+    :header="location ? t('locations.edit') : t('locations.new')"
     :style="{ width: '500px' }"
     modal
   >
     <form @submit.prevent="handleSubmit" class="form">
       <div class="field">
-        <label for="name">Navn *</label>
+        <label for="name">{{ t('locations.fields.name') }} *</label>
         <InputText
           id="name"
           v-model="formData.name"
@@ -112,7 +115,7 @@ function handleCancel() {
       </div>
 
       <div class="field">
-        <label for="address">Adresse</label>
+        <label for="address">{{ t('locations.fields.address') }}</label>
         <InputText
           id="address"
           v-model="formData.address"
@@ -122,7 +125,7 @@ function handleCancel() {
 
       <div class="field-group">
         <div class="field">
-          <label for="latitude">Breddegrad</label>
+          <label for="latitude">{{ t('locations.fields.latitude') }}</label>
           <InputNumber
             id="latitude"
             v-model="formData.latitude"
@@ -133,7 +136,7 @@ function handleCancel() {
         </div>
 
         <div class="field">
-          <label for="longitude">Lengdegrad</label>
+          <label for="longitude">{{ t('locations.fields.longitude') }}</label>
           <InputNumber
             id="longitude"
             v-model="formData.longitude"
@@ -145,7 +148,7 @@ function handleCancel() {
       </div>
 
       <div class="field">
-        <label for="description">Beskrivelse</label>
+        <label for="description">{{ t('locations.fields.description') }}</label>
         <Textarea
           id="description"
           v-model="formData.description"
@@ -156,14 +159,14 @@ function handleCancel() {
 
       <div class="form-actions">
         <Button
-          label="Avbryt"
+          :label="t('common.cancel')"
           severity="secondary"
           text
           @click="handleCancel"
           type="button"
         />
         <Button
-          label="Lagre"
+          :label="t('common.save')"
           type="submit"
           :loading="store.loading"
         />

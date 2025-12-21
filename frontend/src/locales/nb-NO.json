@@ -1,0 +1,104 @@
+{
+  "app": {
+    "title": "Mitt Naturkart",
+    "subtitle": "Spor dine naturobservasjoner"
+  },
+  "navigation": {
+    "observations": "Observasjoner",
+    "locations": "Steder"
+  },
+  "common": {
+    "save": "Lagre",
+    "cancel": "Avbryt",
+    "edit": "Rediger",
+    "delete": "Slett",
+    "create": "Opprett",
+    "actions": "Handlinger",
+    "loading": "Laster...",
+    "optional": "valgfritt",
+    "required": "*"
+  },
+  "observations": {
+    "title": "Observasjoner",
+    "new": "Ny observasjon",
+    "edit": "Rediger observasjon",
+    "none_found": "Ingen observasjoner funnet",
+    "delete_confirm": "Er du sikker på at du vil slette observasjonen av {species}?",
+    "delete_header": "Bekreft sletting",
+    "fields": {
+      "species": "Art",
+      "category": "Kategori",
+      "date": "Dato",
+      "time": "Tidspunkt",
+      "location": "Sted",
+      "notes": "Notater"
+    },
+    "categories": {
+      "bird": "Fugl",
+      "mammal": "Pattedyr",
+      "insect": "Insekt",
+      "plant": "Plante",
+      "fish": "Fisk",
+      "other": "Annet"
+    },
+    "columns": {
+      "species": "Art",
+      "category": "Kategori",
+      "date_time": "Dato og tidspunkt",
+      "notes": "Notater"
+    },
+    "messages": {
+      "created": "Observasjonen ble opprettet",
+      "updated": "Observasjonen ble oppdatert",
+      "deleted": "Observasjonen ble slettet",
+      "error_create": "Kunne ikke opprette observasjon",
+      "error_update": "Kunne ikke oppdatere observasjon",
+      "error_delete": "Kunne ikke slette observasjonen",
+      "error_fetch": "Kunne ikke laste observasjoner"
+    },
+    "placeholders": {
+      "select_location": "Velg sted..."
+    }
+  },
+  "locations": {
+    "title": "Steder",
+    "new": "Nytt sted",
+    "edit": "Rediger sted",
+    "none_found": "Ingen steder funnet",
+    "delete_confirm": "Er du sikker på at du vil slette stedet \"{name}\"?",
+    "delete_header": "Bekreft sletting",
+    "fields": {
+      "name": "Navn",
+      "address": "Adresse",
+      "latitude": "Breddegrad",
+      "longitude": "Lengdegrad",
+      "description": "Beskrivelse"
+    },
+    "columns": {
+      "name": "Navn",
+      "address": "Adresse",
+      "coordinates": "Koordinater",
+      "observations": "Observasjoner",
+      "description": "Beskrivelse"
+    },
+    "messages": {
+      "created": "Stedet ble opprettet",
+      "updated": "Stedet ble oppdatert",
+      "deleted": "Stedet ble slettet",
+      "error_create": "Kunne ikke opprette sted",
+      "error_update": "Kunne ikke oppdatere sted",
+      "error_delete": "Kunne ikke slette stedet",
+      "error_fetch": "Kunne ikke laste steder"
+    }
+  },
+  "confirmDialog": {
+    "accept": "Ja",
+    "reject": "Nei"
+  },
+  "toast": {
+    "success": "Vellykket",
+    "error": "Feil",
+    "info": "Informasjon",
+    "warn": "Advarsel"
+  }
+}

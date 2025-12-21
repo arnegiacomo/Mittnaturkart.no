@@ -9,7 +9,9 @@ import { useLocationStore } from '../stores/locations'
 import type { Observation } from '../types'
 import type { TableColumn } from './EntityTable.vue'
 import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable'
+import { useI18n } from '../composables/useI18n'
 
+const { t } = useI18n()
 const store = useObservationStore()
 const locationStore = useLocationStore()
 const toast = useToast()
@@ -24,20 +26,20 @@ const sortBy = ref('id')
 const sortOrder = ref('desc')
 
 const columns: TableColumn<Observation>[] = [
-  { field: 'species', header: 'Art', sortable: true },
-  { field: 'category', header: 'Kategori', sortable: true },
+  { field: 'species', header: t('observations.columns.species'), sortable: true },
+  { field: 'category', header: t('observations.columns.category'), sortable: true },
   {
     field: 'date',
-    header: 'Dato og tid',
+    header: t('observations.columns.date_time'),
     sortable: true,
     formatter: (data: Observation) => {
       const date = new Date(data.date)
-      return `${date.toLocaleDateString('no-NO')} ${date.toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' })}`
+      return `${date.toLocaleDateString('nb-NO')} ${date.toLocaleTimeString('nb-NO', { hour: '2-digit', minute: '2-digit' })}`
     }
   },
   {
     field: 'notes',
-    header: 'Notater',
+    header: t('observations.columns.notes'),
     formatter: (data: Observation) => data.notes || '-'
   }
 ]
@@ -75,11 +77,11 @@ function handleEdit(observation: Observation) {
 
 function handleDelete(observation: Observation) {
   confirm.require({
-    message: `Er du sikker på at du vil slette observasjonen av ${observation.species}?`,
-    header: 'Bekreft sletting',
+    message: t('observations.delete_confirm', { species: observation.species }),
+    header: t('observations.delete_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Ja',
-    rejectLabel: 'Nei',
+    acceptLabel: t('confirmDialog.accept'),
+    rejectLabel: t('confirmDialog.reject'),
     accept: async () => {
       try {
         await store.deleteObservation(observation.id!)
@@ -88,15 +90,15 @@ function handleDelete(observation: Observation) {
         await locationStore.fetchLocations(0, 100)
         toast.add({
           severity: 'success',
-          summary: 'Slettet',
-          detail: 'Observasjonen ble slettet',
+          summary: t('toast.success'),
+          detail: t('observations.messages.deleted'),
           life: 3000
         })
       } catch {
         toast.add({
           severity: 'error',
-          summary: 'Feil',
-          detail: 'Kunne ikke slette observasjonen',
+          summary: t('toast.error'),
+          detail: t('observations.messages.error_delete'),
           life: 3000
         })
       }
@@ -114,8 +116,8 @@ function handleDelete(observation: Observation) {
       :total-records="store.totalRecords"
       :rows="rows"
       :first="first"
-      create-button-label="Ny observasjon"
-      empty-message="Ingen observasjoner funnet"
+      :create-button-label="t('observations.new')"
+      :empty-message="t('observations.none_found')"
       @create="handleCreate"
       @edit="handleEdit"
       @delete="handleDelete"

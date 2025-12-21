@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { locationApi } from '../api'
 import type { Location, LocationWithCount } from '../types'
+import { t } from '../i18n'
 
 export const useLocationStore = defineStore('locations', () => {
   const locations = ref<LocationWithCount[]>([])
@@ -16,7 +17,7 @@ export const useLocationStore = defineStore('locations', () => {
       locations.value = response.data.data
       totalRecords.value = response.data.total
     } catch (e) {
-      error.value = 'Kunne ikke laste steder'
+      error.value = t('locations.messages.error_fetch')
       console.error(e)
     }
   }
@@ -30,7 +31,7 @@ export const useLocationStore = defineStore('locations', () => {
       await fetchLocations()
       return response.data
     } catch (e) {
-      error.value = 'Kunne ikke opprette sted'
+      error.value = t('locations.messages.error_create')
       console.error(e)
       throw e
     } finally {
@@ -49,7 +50,7 @@ export const useLocationStore = defineStore('locations', () => {
         locations.value[index] = { ...response.data, observation_count: locations.value[index].observation_count }
       }
     } catch (e) {
-      error.value = 'Kunne ikke oppdatere sted'
+      error.value = t('locations.messages.error_update')
       console.error(e)
       throw e
     } finally {
@@ -64,10 +65,10 @@ export const useLocationStore = defineStore('locations', () => {
       await locationApi.delete(id)
       locations.value = locations.value.filter(l => l.id !== id)
     } catch (e) {
-      error.value = 'Kunne ikke slette sted'
+      error.value = t('locations.messages.error_delete')
       console.error(e)
       throw e
-    } finally {
+    } finally{
       loading.value = false
     }
   }

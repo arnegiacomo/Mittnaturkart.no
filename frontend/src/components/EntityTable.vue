@@ -1,9 +1,4 @@
-<script setup lang="ts" generic="T">
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Button from 'primevue/button'
-import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable'
-
+<script lang="ts" generic="T">
 export interface TableColumn<T> {
   field?: keyof T | string
   header: string
@@ -11,6 +6,16 @@ export interface TableColumn<T> {
   formatter?: (data: T) => string | number
   component?: (data: T) => any
 }
+</script>
+
+<script setup lang="ts" generic="T">
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Button from 'primevue/button'
+import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable'
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 
 interface Props {
   data: T[]
@@ -91,7 +96,7 @@ const emit = defineEmits<{
         </template>
       </Column>
 
-      <Column v-if="showActions" header="Handlinger">
+      <Column v-if="showActions" :header="t('common.actions')">
         <template #body="{ data }">
           <div class="actions">
             <Button

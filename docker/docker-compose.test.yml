@@ -2,7 +2,7 @@ name: mittnaturkart-test
 
 services:
   postgres-test:
-    image: postgres:16-alpine
+    image: postgres:18-alpine
     container_name: mittnaturkart-test-db
     environment:
       POSTGRES_DB: mittnaturkart_test
