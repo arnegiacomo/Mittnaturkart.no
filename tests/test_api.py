@@ -178,6 +178,91 @@ def test_delete_location(location_id):
     assert response.status_code == 404, "Location should not exist after deletion"
     print(f"✓ Deleted location ID: {location_id}")
 
+def test_observation_sorting():
+    print("\n--- Testing Observation Sorting ---")
+
+    observations = [
+        {"species": "Ørn", "date": "2024-01-01", "category": "Fugl", "notes": "Note A"},
+        {"species": "Bjørn", "date": "2024-03-01", "category": "Pattedyr", "notes": "Note B"},
+        {"species": "Rødstrupe", "date": "2024-02-01", "category": "Fugl", "notes": "Note C"},
+    ]
+
+    created_ids = []
+    for obs in observations:
+        response = requests.post(f"{API_URL}/api/v1/observations", json=obs)
+        assert response.status_code == 201
+        created_ids.append(response.json()["id"])
+
+    response = requests.get(f"{API_URL}/api/v1/observations", params={"sort_by": "species", "sort_order": "asc"})
+    assert response.status_code == 200
+    data = response.json()["data"]
+    species_list = [obs["species"] for obs in data]
+    assert species_list == sorted(species_list), "Species should be sorted ascending"
+    print("✓ Observations sorted by species (asc)")
+
+    response = requests.get(f"{API_URL}/api/v1/observations", params={"sort_by": "species", "sort_order": "desc"})
+    assert response.status_code == 200
+    data = response.json()["data"]
+    species_list = [obs["species"] for obs in data]
+    assert species_list == sorted(species_list, reverse=True), "Species should be sorted descending"
+    print("✓ Observations sorted by species (desc)")
+
+    response = requests.get(f"{API_URL}/api/v1/observations", params={"sort_by": "date", "sort_order": "asc"})
+    assert response.status_code == 200
+    data = response.json()["data"]
+    date_list = [obs["date"] for obs in data]
+    assert date_list == sorted(date_list), "Dates should be sorted ascending"
+    print("✓ Observations sorted by date (asc)")
+
+    response = requests.get(f"{API_URL}/api/v1/observations", params={"sort_by": "category", "sort_order": "asc"})
+    assert response.status_code == 200
+    data = response.json()["data"]
+    category_list = [obs["category"] for obs in data]
+    assert category_list == sorted(category_list), "Categories should be sorted ascending"
+    print("✓ Observations sorted by category (asc)")
+
+    for obs_id in created_ids:
+        requests.delete(f"{API_URL}/api/v1/observations/{obs_id}")
+
+def test_location_sorting():
+    print("\n--- Testing Location Sorting ---")
+
+    locations = [
+        {"name": "Zoo", "address": "Address C", "latitude": 60.0, "longitude": 10.0},
+        {"name": "Akvariet", "address": "Address A", "latitude": 59.0, "longitude": 11.0},
+        {"name": "Museum", "address": "Address B", "latitude": 61.0, "longitude": 9.0},
+    ]
+
+    created_ids = []
+    for loc in locations:
+        response = requests.post(f"{API_URL}/api/v1/locations", json=loc)
+        assert response.status_code == 201
+        created_ids.append(response.json()["id"])
+
+    response = requests.get(f"{API_URL}/api/v1/locations", params={"sort_by": "name", "sort_order": "asc"})
+    assert response.status_code == 200
+    data = response.json()["data"]
+    name_list = [loc["name"] for loc in data]
+    assert name_list == sorted(name_list), "Names should be sorted ascending"
+    print("✓ Locations sorted by name (asc)")
+
+    response = requests.get(f"{API_URL}/api/v1/locations", params={"sort_by": "name", "sort_order": "desc"})
+    assert response.status_code == 200
+    data = response.json()["data"]
+    name_list = [loc["name"] for loc in data]
+    assert name_list == sorted(name_list, reverse=True), "Names should be sorted descending"
+    print("✓ Locations sorted by name (desc)")
+
+    response = requests.get(f"{API_URL}/api/v1/locations", params={"sort_by": "address", "sort_order": "asc"})
+    assert response.status_code == 200
+    data = response.json()["data"]
+    address_list = [loc["address"] if loc["address"] else "" for loc in data]
+    assert address_list == sorted(address_list), "Addresses should be sorted ascending"
+    print("✓ Locations sorted by address (asc)")
+
+    for loc_id in created_ids:
+        requests.delete(f"{API_URL}/api/v1/locations/{loc_id}")
+
 def run_tests():
     print("=" * 50)
     print("Starting API Tests (via Nginx)")
@@ -205,6 +290,10 @@ def run_tests():
 
         # Delete location after observations are deleted
         test_delete_location(location_id)
+
+        # Test sorting functionality
+        test_observation_sorting()
+        test_location_sorting()
 
         print("\n" + "=" * 50)
         print("✓ All tests passed!")

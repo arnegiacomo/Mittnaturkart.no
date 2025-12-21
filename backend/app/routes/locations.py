@@ -2,23 +2,35 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
+from enum import Enum
 from ..database import get_db
 from ..models import Location as LocationModel, Observation as ObservationModel
 from ..schemas import Location, LocationCreate, LocationUpdate, LocationWithCount, PaginatedResponse
 
 router = APIRouter(prefix="/locations", tags=["locations"])
 
-@router.get("", response_model=PaginatedResponse[LocationWithCount])
-def get_locations(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    total = db.query(LocationModel).count()
+class LocationSortField(str, Enum):
+    id = "id"
+    name = "name"
+    address = "address"
+    created_at = "created_at"
+    updated_at = "updated_at"
 
-    # Query locations with observation count
+class SortOrder(str, Enum):
+    asc = "asc"
+    desc = "desc"
+
+@router.get("", response_model=PaginatedResponse[LocationWithCount])
+def get_locations(skip: int = 0, limit: int = 100, sort_by: LocationSortField = LocationSortField.id, sort_order: SortOrder = SortOrder.desc, db: Session = Depends(get_db)):
+    total = db.query(LocationModel).count()
+    sort_field = getattr(LocationModel, sort_by.value)
+    order_func = sort_field.asc() if sort_order == SortOrder.asc else sort_field.desc()
+
     locations_query = db.query(
         LocationModel,
         func.count(ObservationModel.id).label('observation_count')
-    ).outerjoin(ObservationModel).group_by(LocationModel.id).order_by(LocationModel.id.desc()).offset(skip).limit(limit).all()
+    ).outerjoin(ObservationModel).group_by(LocationModel.id).order_by(order_func).offset(skip).limit(limit).all()
 
-    # Transform to LocationWithCount
     locations = []
     for location, count in locations_query:
         location_dict = {
@@ -42,7 +54,6 @@ def get_location(location_id: int, db: Session = Depends(get_db)):
     if not location:
         raise HTTPException(status_code=404, detail="Location not found")
 
-    # Get observation count
     observation_count = db.query(func.count(ObservationModel.id)).filter(ObservationModel.location_id == location_id).scalar()
 
     return {

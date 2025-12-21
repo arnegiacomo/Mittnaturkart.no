@@ -8,7 +8,7 @@ import { useObservationStore } from '../stores/observations'
 import { useLocationStore } from '../stores/locations'
 import type { Observation } from '../types'
 import type { TableColumn } from './EntityTable.vue'
-import type { DataTablePageEvent } from 'primevue/datatable'
+import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable'
 
 const store = useObservationStore()
 const locationStore = useLocationStore()
@@ -20,6 +20,8 @@ const editingObservation = ref<Observation | null>(null)
 const rows = ref(10)
 const first = ref(0)
 const initialLoading = ref(true)
+const sortBy = ref('id')
+const sortOrder = ref('desc')
 
 const columns: TableColumn<Observation>[] = [
   { field: 'species', header: 'Art', sortable: true },
@@ -43,12 +45,18 @@ onMounted(async () => {
 })
 
 async function loadObservations() {
-  await store.fetchObservations(first.value, rows.value)
+  await store.fetchObservations(first.value, rows.value, sortBy.value, sortOrder.value)
 }
 
 function onPage(event: DataTablePageEvent) {
   first.value = event.first
   rows.value = event.rows
+  loadObservations()
+}
+
+function onSort(event: DataTableSortEvent) {
+  sortBy.value = event.sortField as string
+  sortOrder.value = event.sortOrder === 1 ? 'asc' : 'desc'
   loadObservations()
 }
 
@@ -109,6 +117,7 @@ function handleDelete(observation: Observation) {
       @edit="handleEdit"
       @delete="handleDelete"
       @page="onPage"
+      @sort="onSort"
     />
 
     <ObservationForm

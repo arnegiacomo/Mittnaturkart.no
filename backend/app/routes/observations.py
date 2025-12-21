@@ -1,16 +1,31 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 from typing import List
+from enum import Enum
 from ..database import get_db
 from ..models import Observation as ObservationModel
 from ..schemas import Observation, ObservationCreate, ObservationUpdate, PaginatedResponse
 
 router = APIRouter(prefix="/observations", tags=["observations"])
 
+class ObservationSortField(str, Enum):
+    id = "id"
+    species = "species"
+    category = "category"
+    date = "date"
+    created_at = "created_at"
+    updated_at = "updated_at"
+
+class SortOrder(str, Enum):
+    asc = "asc"
+    desc = "desc"
+
 @router.get("", response_model=PaginatedResponse[Observation])
-def get_observations(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+def get_observations(skip: int = 0, limit: int = 100, sort_by: ObservationSortField = ObservationSortField.id, sort_order: SortOrder = SortOrder.desc, db: Session = Depends(get_db)):
     total = db.query(ObservationModel).count()
-    observations = db.query(ObservationModel).options(joinedload(ObservationModel.location)).order_by(ObservationModel.id.desc()).offset(skip).limit(limit).all()
+    sort_field = getattr(ObservationModel, sort_by.value)
+    order_func = sort_field.asc() if sort_order == SortOrder.asc else sort_field.desc()
+    observations = db.query(ObservationModel).options(joinedload(ObservationModel.location)).order_by(order_func).offset(skip).limit(limit).all()
     return {"data": observations, "total": total}
 
 @router.get("/{observation_id}", response_model=Observation)

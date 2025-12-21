@@ -2,7 +2,7 @@
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
-import type { DataTablePageEvent } from 'primevue/datatable'
+import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable'
 
 export interface TableColumn<T> {
   field?: keyof T | string
@@ -40,6 +40,7 @@ const emit = defineEmits<{
   edit: [item: T]
   delete: [item: T]
   page: [event: DataTablePageEvent]
+  sort: [event: DataTableSortEvent]
 }>()
 </script>
 
@@ -64,6 +65,7 @@ const emit = defineEmits<{
       :totalRecords="totalRecords"
       :first="first"
       @page="emit('page', $event)"
+      @sort="emit('sort', $event)"
       tableStyle="min-width: 50rem"
       class="entity-table"
     >

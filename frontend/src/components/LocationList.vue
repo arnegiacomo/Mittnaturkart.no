@@ -8,7 +8,7 @@ import { useLocationStore } from '../stores/locations'
 import { useObservationStore } from '../stores/observations'
 import type { LocationWithCount } from '../types'
 import type { TableColumn } from './EntityTable.vue'
-import type { DataTablePageEvent } from 'primevue/datatable'
+import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable'
 
 const store = useLocationStore()
 const observationStore = useObservationStore()
@@ -20,6 +20,8 @@ const editingLocation = ref<LocationWithCount | null>(null)
 const rows = ref(10)
 const first = ref(0)
 const initialLoading = ref(true)
+const sortBy = ref('id')
+const sortOrder = ref('desc')
 
 const columns: TableColumn<LocationWithCount>[] = [
   { field: 'name', header: 'Navn', sortable: true },
@@ -55,12 +57,18 @@ onMounted(async () => {
 })
 
 async function loadLocations() {
-  await store.fetchLocations(first.value, rows.value)
+  await store.fetchLocations(first.value, rows.value, sortBy.value, sortOrder.value)
 }
 
 function onPage(event: DataTablePageEvent) {
   first.value = event.first
   rows.value = event.rows
+  loadLocations()
+}
+
+function onSort(event: DataTableSortEvent) {
+  sortBy.value = event.sortField as string
+  sortOrder.value = event.sortOrder === 1 ? 'asc' : 'desc'
   loadLocations()
 }
 
@@ -122,6 +130,7 @@ function handleDelete(location: LocationWithCount) {
       @edit="handleEdit"
       @delete="handleDelete"
       @page="onPage"
+      @sort="onSort"
     />
 
     <LocationForm
