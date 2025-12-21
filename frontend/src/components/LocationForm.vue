@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
@@ -33,7 +33,9 @@ const formData = ref<Location>({
   address: ''
 })
 
-watch(() => props.location, (newVal) => {
+const formModified = ref<boolean>(false)
+
+watch(() => props.location, async (newVal) => {
   if (newVal) {
     formData.value = {
       name: newVal.name,
@@ -42,12 +44,18 @@ watch(() => props.location, (newVal) => {
       description: newVal.description,
       address: newVal.address
     }
+    await nextTick()
+    formModified.value = false
   } else {
     resetForm()
   }
 }, { immediate: true })
 
-function resetForm() {
+watch(formData, () => {
+  formModified.value = true
+}, { deep: true })
+
+async function resetForm() {
   formData.value = {
     name: '',
     latitude: null,
@@ -55,6 +63,8 @@ function resetForm() {
     description: '',
     address: ''
   }
+  await nextTick()
+  formModified.value = false
 }
 
 async function handleSubmit() {
@@ -93,15 +103,27 @@ function handleCancel() {
   emit('update:visible', false)
   resetForm()
 }
+
+function handleClose() {
+  if (formModified.value) {
+    const confirmed = window.confirm(t('common.unsaved_changes_warning'))
+    if (!confirmed) {
+      return
+    }
+  }
+  emit('update:visible', false)
+  resetForm()
+}
 </script>
 
 <template>
   <Dialog
     :visible="visible"
-    @update:visible="emit('update:visible', $event)"
+    @update:visible="(val) => !val && handleClose()"
     :header="location ? t('locations.edit') : t('locations.new')"
     :style="{ width: '500px' }"
     modal
+    dismissableMask
   >
     <form @submit.prevent="handleSubmit" class="form">
       <div class="field">

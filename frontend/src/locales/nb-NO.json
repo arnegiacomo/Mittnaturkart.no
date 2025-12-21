@@ -16,7 +16,8 @@
     "actions": "Handlinger",
     "loading": "Laster...",
     "optional": "valgfritt",
-    "required": "*"
+    "required": "*",
+    "unsaved_changes_warning": "Du har ulagrede endringer. Er du sikker på at du vil lukke?"
   },
   "observations": {
     "title": "Observasjoner",

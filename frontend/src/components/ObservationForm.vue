@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -52,19 +52,26 @@ const formData = ref<Observation>({
 
 const selectedDate = ref<Date>(new Date())
 const selectedTime = ref<Date>(new Date())
+const formModified = ref<boolean>(false)
 
-watch(() => props.observation, (newVal) => {
+watch(() => props.observation, async (newVal) => {
   if (newVal) {
     formData.value = { ...newVal }
     const date = new Date(newVal.date)
     selectedDate.value = date
     selectedTime.value = date
+    await nextTick()
+    formModified.value = false
   } else {
     resetForm()
   }
 }, { immediate: true })
 
-function resetForm() {
+watch([formData, selectedDate, selectedTime], () => {
+  formModified.value = true
+}, { deep: true })
+
+async function resetForm() {
   const now = new Date()
   formData.value = {
     species: '',
@@ -75,6 +82,8 @@ function resetForm() {
   }
   selectedDate.value = now
   selectedTime.value = now
+  await nextTick()
+  formModified.value = false
 }
 
 async function handleSubmit() {
@@ -130,15 +139,27 @@ function handleCancel() {
   emit('update:visible', false)
   resetForm()
 }
+
+function handleClose() {
+  if (formModified.value) {
+    const confirmed = window.confirm(t('common.unsaved_changes_warning'))
+    if (!confirmed) {
+      return
+    }
+  }
+  emit('update:visible', false)
+  resetForm()
+}
 </script>
 
 <template>
   <Dialog
     :visible="visible"
-    @update:visible="emit('update:visible', $event)"
+    @update:visible="(val) => !val && handleClose()"
     :header="observation ? t('observations.edit') : t('observations.new')"
     :style="{ width: '500px' }"
     modal
+    dismissableMask
   >
     <form @submit.prevent="handleSubmit" class="form">
       <div class="field">
