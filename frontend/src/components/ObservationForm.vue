@@ -11,8 +11,10 @@ import { useObservationStore } from '../stores/observations'
 import { useLocationStore } from '../stores/locations'
 import type { Observation } from '../types'
 import { useI18n } from '../composables/useI18n'
+import { useFormValidation, type ValidationSchema } from '../composables/useFormValidation'
 
 const { t } = useI18n()
+const { errors, validate, clearErrors } = useFormValidation<Observation & { selectedDate: Date, selectedTime: Date }>()
 
 const props = defineProps<{
   visible: boolean
@@ -54,6 +56,13 @@ const selectedDate = ref<Date>(new Date())
 const selectedTime = ref<Date>(new Date())
 const formModified = ref<boolean>(false)
 
+const validationSchema: ValidationSchema<Observation & { selectedDate: Date, selectedTime: Date }> = {
+  species: { required: true, message: t('common.validation.required') },
+  category: { required: true, message: t('common.validation.required') },
+  selectedDate: { required: true, message: t('common.validation.required') },
+  selectedTime: { required: true, message: t('common.validation.required') }
+}
+
 watch(() => props.observation, async (newVal) => {
   if (newVal) {
     formData.value = { ...newVal }
@@ -82,11 +91,17 @@ async function resetForm() {
   }
   selectedDate.value = now
   selectedTime.value = now
+  clearErrors()
   await nextTick()
   formModified.value = false
 }
 
 async function handleSubmit() {
+  const isValid = validate({ ...formData.value, selectedDate: selectedDate.value, selectedTime: selectedTime.value }, validationSchema)
+  if (!isValid) {
+    return
+  }
+
   try {
     const combinedDateTime = new Date(
       selectedDate.value.getFullYear(),
@@ -167,9 +182,10 @@ function handleClose() {
         <InputText
           id="species"
           v-model="formData.species"
-          required
+          :invalid="!!errors.species"
           class="w-full"
         />
+        <small v-if="errors.species" class="error-text">{{ errors.species }}</small>
       </div>
 
       <div class="field">
@@ -180,9 +196,10 @@ function handleClose() {
           :options="categories"
           optionLabel="label"
           optionValue="value"
-          required
+          :invalid="!!errors.category"
           class="w-full"
         />
+        <small v-if="errors.category" class="error-text">{{ errors.category }}</small>
       </div>
 
       <div class="field">
@@ -191,9 +208,10 @@ function handleClose() {
           id="date"
           v-model="selectedDate"
           dateFormat="yy-mm-dd"
-          required
+          :invalid="!!errors.selectedDate"
           class="w-full"
         />
+        <small v-if="errors.selectedDate" class="error-text">{{ errors.selectedDate }}</small>
       </div>
 
       <div class="field">
@@ -203,9 +221,10 @@ function handleClose() {
           v-model="selectedTime"
           timeOnly
           hourFormat="24"
-          required
+          :invalid="!!errors.selectedTime"
           class="w-full"
         />
+        <small v-if="errors.selectedTime" class="error-text">{{ errors.selectedTime }}</small>
       </div>
 
       <div class="field">
@@ -277,5 +296,12 @@ function handleClose() {
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 0.5rem;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
 }
 </style>
