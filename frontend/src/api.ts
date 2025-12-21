@@ -25,6 +25,11 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem(TOKEN_EXPIRY_KEY)
+
+      // Reload page to trigger auth check, which will redirect to login
+      if (window.location.pathname !== '/auth/callback') {
+        window.location.href = '/'
+      }
     }
     return Promise.reject(error)
   }

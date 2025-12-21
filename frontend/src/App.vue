@@ -26,6 +26,11 @@ const isAuthCallback = computed(() => window.location.pathname === '/auth/callba
 
 onMounted(async () => {
   await authStore.initialize()
+
+  // Redirect to login if not authenticated and not on auth callback page
+  if (!authStore.isAuthenticated && !isAuthCallback.value) {
+    await authStore.login()
+  }
 })
 
 // Refresh data when switching tabs
