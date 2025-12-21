@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
@@ -9,8 +9,10 @@ import { useToast } from 'primevue/usetoast'
 import { useLocationStore } from '../stores/locations'
 import type { Location, LocationWithCount } from '../types'
 import { useI18n } from '../composables/useI18n'
+import { useFormValidation, type ValidationSchema } from '../composables/useFormValidation'
 
 const { t } = useI18n()
+const { errors, validate, clearErrors } = useFormValidation<Location>()
 
 const props = defineProps<{
   visible: boolean
@@ -33,7 +35,13 @@ const formData = ref<Location>({
   address: ''
 })
 
-watch(() => props.location, (newVal) => {
+const formModified = ref<boolean>(false)
+
+const validationSchema: ValidationSchema<Location> = {
+  name: { required: true, message: t('common.validation.required') }
+}
+
+watch(() => props.location, async (newVal) => {
   if (newVal) {
     formData.value = {
       name: newVal.name,
@@ -42,12 +50,18 @@ watch(() => props.location, (newVal) => {
       description: newVal.description,
       address: newVal.address
     }
+    await nextTick()
+    formModified.value = false
   } else {
     resetForm()
   }
 }, { immediate: true })
 
-function resetForm() {
+watch(formData, () => {
+  formModified.value = true
+}, { deep: true })
+
+async function resetForm() {
   formData.value = {
     name: '',
     latitude: null,
@@ -55,9 +69,17 @@ function resetForm() {
     description: '',
     address: ''
   }
+  clearErrors()
+  await nextTick()
+  formModified.value = false
 }
 
 async function handleSubmit() {
+  const isValid = validate(formData.value, validationSchema)
+  if (!isValid) {
+    return
+  }
+
   try {
     if (props.location?.id) {
       await store.updateLocation(props.location.id, formData.value)
@@ -93,15 +115,27 @@ function handleCancel() {
   emit('update:visible', false)
   resetForm()
 }
+
+function handleClose() {
+  if (formModified.value) {
+    const confirmed = window.confirm(t('common.unsaved_changes_warning'))
+    if (!confirmed) {
+      return
+    }
+  }
+  emit('update:visible', false)
+  resetForm()
+}
 </script>
 
 <template>
   <Dialog
     :visible="visible"
-    @update:visible="emit('update:visible', $event)"
+    @update:visible="(val) => !val && handleClose()"
     :header="location ? t('locations.edit') : t('locations.new')"
     :style="{ width: '500px' }"
     modal
+    dismissableMask
   >
     <form @submit.prevent="handleSubmit" class="form">
       <div class="field">
@@ -109,9 +143,10 @@ function handleCancel() {
         <InputText
           id="name"
           v-model="formData.name"
-          required
+          :invalid="!!errors.name"
           class="w-full"
         />
+        <small v-if="errors.name" class="error-text">{{ errors.name }}</small>
       </div>
 
       <div class="field">
@@ -208,5 +243,12 @@ function handleCancel() {
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 0.5rem;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
 }
 </style>

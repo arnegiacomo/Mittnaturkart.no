@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -11,8 +11,10 @@ import { useObservationStore } from '../stores/observations'
 import { useLocationStore } from '../stores/locations'
 import type { Observation } from '../types'
 import { useI18n } from '../composables/useI18n'
+import { useFormValidation, type ValidationSchema } from '../composables/useFormValidation'
 
 const { t } = useI18n()
+const { errors, validate, clearErrors } = useFormValidation<Observation & { selectedDate: Date, selectedTime: Date }>()
 
 const props = defineProps<{
   visible: boolean
@@ -52,19 +54,33 @@ const formData = ref<Observation>({
 
 const selectedDate = ref<Date>(new Date())
 const selectedTime = ref<Date>(new Date())
+const formModified = ref<boolean>(false)
 
-watch(() => props.observation, (newVal) => {
+const validationSchema: ValidationSchema<Observation & { selectedDate: Date, selectedTime: Date }> = {
+  species: { required: true, message: t('common.validation.required') },
+  category: { required: true, message: t('common.validation.required') },
+  selectedDate: { required: true, message: t('common.validation.required') },
+  selectedTime: { required: true, message: t('common.validation.required') }
+}
+
+watch(() => props.observation, async (newVal) => {
   if (newVal) {
     formData.value = { ...newVal }
     const date = new Date(newVal.date)
     selectedDate.value = date
     selectedTime.value = date
+    await nextTick()
+    formModified.value = false
   } else {
     resetForm()
   }
 }, { immediate: true })
 
-function resetForm() {
+watch([formData, selectedDate, selectedTime], () => {
+  formModified.value = true
+}, { deep: true })
+
+async function resetForm() {
   const now = new Date()
   formData.value = {
     species: '',
@@ -75,9 +91,17 @@ function resetForm() {
   }
   selectedDate.value = now
   selectedTime.value = now
+  clearErrors()
+  await nextTick()
+  formModified.value = false
 }
 
 async function handleSubmit() {
+  const isValid = validate({ ...formData.value, selectedDate: selectedDate.value, selectedTime: selectedTime.value }, validationSchema)
+  if (!isValid) {
+    return
+  }
+
   try {
     const combinedDateTime = new Date(
       selectedDate.value.getFullYear(),
@@ -130,15 +154,27 @@ function handleCancel() {
   emit('update:visible', false)
   resetForm()
 }
+
+function handleClose() {
+  if (formModified.value) {
+    const confirmed = window.confirm(t('common.unsaved_changes_warning'))
+    if (!confirmed) {
+      return
+    }
+  }
+  emit('update:visible', false)
+  resetForm()
+}
 </script>
 
 <template>
   <Dialog
     :visible="visible"
-    @update:visible="emit('update:visible', $event)"
+    @update:visible="(val) => !val && handleClose()"
     :header="observation ? t('observations.edit') : t('observations.new')"
     :style="{ width: '500px' }"
     modal
+    dismissableMask
   >
     <form @submit.prevent="handleSubmit" class="form">
       <div class="field">
@@ -146,9 +182,10 @@ function handleCancel() {
         <InputText
           id="species"
           v-model="formData.species"
-          required
+          :invalid="!!errors.species"
           class="w-full"
         />
+        <small v-if="errors.species" class="error-text">{{ errors.species }}</small>
       </div>
 
       <div class="field">
@@ -159,9 +196,10 @@ function handleCancel() {
           :options="categories"
           optionLabel="label"
           optionValue="value"
-          required
+          :invalid="!!errors.category"
           class="w-full"
         />
+        <small v-if="errors.category" class="error-text">{{ errors.category }}</small>
       </div>
 
       <div class="field">
@@ -170,9 +208,10 @@ function handleCancel() {
           id="date"
           v-model="selectedDate"
           dateFormat="yy-mm-dd"
-          required
+          :invalid="!!errors.selectedDate"
           class="w-full"
         />
+        <small v-if="errors.selectedDate" class="error-text">{{ errors.selectedDate }}</small>
       </div>
 
       <div class="field">
@@ -182,9 +221,10 @@ function handleCancel() {
           v-model="selectedTime"
           timeOnly
           hourFormat="24"
-          required
+          :invalid="!!errors.selectedTime"
           class="w-full"
         />
+        <small v-if="errors.selectedTime" class="error-text">{{ errors.selectedTime }}</small>
       </div>
 
       <div class="field">
@@ -256,5 +296,12 @@ function handleCancel() {
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 0.5rem;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
 }
 </style>

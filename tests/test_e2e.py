@@ -80,8 +80,8 @@ def test_edit_observation(page):
     # Wait for table to load
     page.wait_for_selector("table", timeout=5000)
 
-    # Click edit button (pencil icon) - PrimeVue buttons have the icon as child
-    page.locator('button:has(.pi-pencil)').first.click()
+    # Click on the first row to edit (rows are now clickable)
+    page.locator('tbody tr').first.click()
 
     # Wait for dialog
     page.wait_for_selector('[role="dialog"]', timeout=5000)
@@ -105,8 +105,12 @@ def test_delete_observation(page):
     # Wait for table to load
     page.wait_for_selector("table", timeout=5000)
 
-    # Click delete button (trash icon)
-    page.locator('button:has(.pi-trash)').first.click()
+    # Click kebab menu button (three vertical dots)
+    page.locator('button:has(.pi-ellipsis-v)').first.click()
+
+    # Wait for menu to appear and click delete option
+    page.wait_for_selector('[role="menu"]', timeout=5000)
+    page.locator('[role="menuitem"]').filter(has_text="Slett").click()
 
     # Wait for PrimeVue confirmation dialog (uses .p-confirmdialog class)
     page.wait_for_selector(".p-confirmdialog", timeout=5000)
@@ -173,9 +177,9 @@ def test_edit_location(page):
     page.get_by_role("tab", name="Steder").click()
     page.wait_for_timeout(500)
 
-    # Find the row containing our location, then click the edit button within that row
+    # Find the row containing our location and click it (rows are now clickable)
     row = page.get_by_role("row").filter(has_text="E2E Test Location").first
-    row.locator('button:has(.pi-pencil)').click()
+    row.click()
 
     # Wait for dialog
     page.wait_for_selector('[role="dialog"]', timeout=5000)
@@ -253,9 +257,13 @@ def test_delete_location(page):
     page.get_by_role("tab", name="Steder").click()
     page.wait_for_timeout(500)
 
-    # Find the row containing our location, then click the delete button within that row
+    # Find the row containing our location, then click kebab menu
     row = page.get_by_role("row").filter(has_text="E2E Test Location").first
-    row.locator('button:has(.pi-trash)').click()
+    row.locator('button:has(.pi-ellipsis-v)').click()
+
+    # Wait for menu to appear and click delete option
+    page.wait_for_selector('[role="menu"]', timeout=5000)
+    page.locator('[role="menuitem"]').filter(has_text="Slett").click()
 
     # Wait for confirmation dialog
     page.wait_for_selector(".p-confirmdialog", timeout=5000)
