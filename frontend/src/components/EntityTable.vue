@@ -9,13 +9,18 @@ export interface TableColumn<T> {
 </script>
 
 <script setup lang="ts" generic="T">
+import { ref } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
+import Menu from 'primevue/menu'
 import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable'
+import type { MenuItem } from 'primevue/menuitem'
 import { useI18n } from '../composables/useI18n'
 
 const { t } = useI18n()
+const menu = ref()
+const selectedItem = ref<T | null>(null)
 
 interface Props {
   data: T[]
@@ -47,6 +52,37 @@ const emit = defineEmits<{
   page: [event: DataTablePageEvent]
   sort: [event: DataTableSortEvent]
 }>()
+
+const menuItems = ref<MenuItem[]>([
+  {
+    label: t('common.edit'),
+    icon: 'pi pi-pencil',
+    command: () => {
+      if (selectedItem.value) {
+        emit('edit', selectedItem.value)
+      }
+    }
+  },
+  {
+    label: t('common.delete'),
+    icon: 'pi pi-trash',
+    command: () => {
+      if (selectedItem.value) {
+        emit('delete', selectedItem.value)
+      }
+    }
+  }
+])
+
+const toggleMenu = (event: Event, item: T) => {
+  event.stopPropagation()
+  selectedItem.value = item
+  menu.value.toggle(event)
+}
+
+const onRowClick = (event: any) => {
+  emit('edit', event.data)
+}
 </script>
 
 <template>
@@ -63,7 +99,6 @@ const emit = defineEmits<{
     <DataTable
       :value="data"
       :loading="loading"
-      stripedRows
       lazy
       paginator
       :rows="rows"
@@ -71,6 +106,7 @@ const emit = defineEmits<{
       :first="first"
       @page="emit('page', $event)"
       @sort="emit('sort', $event)"
+      @row-click="onRowClick"
       tableStyle="min-width: 50rem"
       class="entity-table"
     >
@@ -96,26 +132,20 @@ const emit = defineEmits<{
         </template>
       </Column>
 
-      <Column v-if="showActions" :header="t('common.actions')">
+      <Column v-if="showActions" :style="{ width: '4rem' }">
         <template #body="{ data }">
-          <div class="actions">
-            <Button
-              icon="pi pi-pencil"
-              size="small"
-              text
-              @click="emit('edit', data)"
-            />
-            <Button
-              icon="pi pi-trash"
-              size="small"
-              severity="danger"
-              text
-              @click="emit('delete', data)"
-            />
-          </div>
+          <Button
+            icon="pi pi-ellipsis-v"
+            text
+            rounded
+            @click="(event) => toggleMenu(event, data)"
+            aria-label="Meny"
+          />
         </template>
       </Column>
     </DataTable>
+
+    <Menu ref="menu" :model="menuItems" popup />
   </div>
 </template>
 
@@ -135,6 +165,14 @@ const emit = defineEmits<{
   transition: opacity 0.2s ease-in-out;
 }
 
+.entity-table :deep(tbody tr) {
+  cursor: pointer;
+}
+
+.entity-table :deep(tbody tr:hover) {
+  background-color: #f8fafc;
+}
+
 .empty-state {
   text-align: center;
   padding: 3rem;
@@ -144,10 +182,5 @@ const emit = defineEmits<{
 .empty-state p {
   margin-top: 1rem;
   font-size: 1.1rem;
-}
-
-.actions {
-  display: flex;
-  gap: 0.5rem;
 }
 </style>
