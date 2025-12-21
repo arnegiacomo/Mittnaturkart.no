@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import Tabs from 'primevue/tabs'
 import TabList from 'primevue/tablist'
 import Tab from 'primevue/tab'
@@ -9,14 +9,24 @@ import ConfirmDialog from 'primevue/confirmdialog'
 import Toast from 'primevue/toast'
 import ObservationList from './components/ObservationList.vue'
 import LocationList from './components/LocationList.vue'
+import UserMenu from './components/UserMenu.vue'
+import AuthCallback from './components/AuthCallback.vue'
 import { useObservationStore } from './stores/observations'
 import { useLocationStore } from './stores/locations'
+import { useAuthStore } from './stores/auth'
 import { useI18n } from './composables/useI18n'
 
 const { t } = useI18n()
 const activeTab = ref('0')
 const observationStore = useObservationStore()
 const locationStore = useLocationStore()
+const authStore = useAuthStore()
+
+const isAuthCallback = computed(() => window.location.pathname === '/auth/callback')
+
+onMounted(async () => {
+  await authStore.initialize()
+})
 
 // Refresh data when switching tabs
 watch(activeTab, async (newTab) => {
@@ -34,28 +44,36 @@ watch(activeTab, async (newTab) => {
   <div class="app">
     <Toast />
     <ConfirmDialog />
-    <header class="header">
-      <h1>{{ t('app.title') }}</h1>
-      <p>{{ t('app.subtitle') }}</p>
-    </header>
-    <Tabs v-model:value="activeTab" class="tabs">
-      <TabList>
-        <Tab value="0">{{ t('navigation.observations') }}</Tab>
-        <Tab value="1">{{ t('navigation.locations') }}</Tab>
-      </TabList>
-      <TabPanels>
-        <TabPanel value="0">
-          <div class="content">
-            <ObservationList />
+    <AuthCallback v-if="isAuthCallback" />
+    <template v-else>
+      <header class="header">
+        <div class="header-content">
+          <div class="header-text">
+            <h1>{{ t('app.title') }}</h1>
+            <p>{{ t('app.subtitle') }}</p>
           </div>
-        </TabPanel>
-        <TabPanel value="1">
-          <div class="content">
-            <LocationList />
-          </div>
-        </TabPanel>
-      </TabPanels>
-    </Tabs>
+          <UserMenu />
+        </div>
+      </header>
+      <Tabs v-model:value="activeTab" class="tabs">
+        <TabList>
+          <Tab value="0">{{ t('navigation.observations') }}</Tab>
+          <Tab value="1">{{ t('navigation.locations') }}</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel value="0">
+            <div class="content">
+              <ObservationList />
+            </div>
+          </TabPanel>
+          <TabPanel value="1">
+            <div class="content">
+              <LocationList />
+            </div>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+    </template>
   </div>
 </template>
 
@@ -69,7 +87,19 @@ watch(activeTab, async (newTab) => {
   background: #10b981;
   padding: 2rem;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-text {
   text-align: center;
+  flex: 1;
 }
 
 .header h1 {

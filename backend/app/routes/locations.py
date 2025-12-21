@@ -4,8 +4,9 @@ from sqlalchemy import func
 from typing import List
 from enum import Enum
 from ..database import get_db
-from ..models import Location as LocationModel, Observation as ObservationModel
+from ..models import Location as LocationModel, Observation as ObservationModel, User as UserModel
 from ..schemas import Location, LocationCreate, LocationUpdate, LocationWithCount, PaginatedResponse
+from ..auth import get_current_user
 
 router = APIRouter(prefix="/locations", tags=["locations"])
 
@@ -21,7 +22,7 @@ class SortOrder(str, Enum):
     desc = "desc"
 
 @router.get("", response_model=PaginatedResponse[LocationWithCount])
-def get_locations(skip: int = 0, limit: int = 100, sort_by: LocationSortField = LocationSortField.id, sort_order: SortOrder = SortOrder.desc, db: Session = Depends(get_db)):
+def get_locations(skip: int = 0, limit: int = 100, sort_by: LocationSortField = LocationSortField.id, sort_order: SortOrder = SortOrder.desc, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
     total = db.query(LocationModel).count()
     sort_field = getattr(LocationModel, sort_by.value)
     order_func = sort_field.asc() if sort_order == SortOrder.asc else sort_field.desc()
@@ -49,7 +50,7 @@ def get_locations(skip: int = 0, limit: int = 100, sort_by: LocationSortField = 
     return {"data": locations, "total": total}
 
 @router.get("/{location_id}", response_model=LocationWithCount)
-def get_location(location_id: int, db: Session = Depends(get_db)):
+def get_location(location_id: int, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
     location = db.query(LocationModel).filter(LocationModel.id == location_id).first()
     if not location:
         raise HTTPException(status_code=404, detail="Location not found")
@@ -69,7 +70,7 @@ def get_location(location_id: int, db: Session = Depends(get_db)):
     }
 
 @router.post("", response_model=Location, status_code=201)
-def create_location(location: LocationCreate, db: Session = Depends(get_db)):
+def create_location(location: LocationCreate, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
     db_location = LocationModel(**location.model_dump())
     db.add(db_location)
     db.commit()
@@ -77,7 +78,7 @@ def create_location(location: LocationCreate, db: Session = Depends(get_db)):
     return db_location
 
 @router.put("/{location_id}", response_model=Location)
-def update_location(location_id: int, location: LocationUpdate, db: Session = Depends(get_db)):
+def update_location(location_id: int, location: LocationUpdate, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
     db_location = db.query(LocationModel).filter(LocationModel.id == location_id).first()
     if not db_location:
         raise HTTPException(status_code=404, detail="Location not found")
@@ -91,7 +92,7 @@ def update_location(location_id: int, location: LocationUpdate, db: Session = De
     return db_location
 
 @router.delete("/{location_id}", status_code=204)
-def delete_location(location_id: int, db: Session = Depends(get_db)):
+def delete_location(location_id: int, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
     db_location = db.query(LocationModel).filter(LocationModel.id == location_id).first()
     if not db_location:
         raise HTTPException(status_code=404, detail="Location not found")

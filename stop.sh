@@ -14,7 +14,7 @@ export VERSION=$(grep '^version = ' backend/pyproject.toml 2>/dev/null | sed 's/
 
 cd docker
 
-RUNNING=$(docker compose ps -q 2>/dev/null | wc -l | tr -d ' ')
+RUNNING=$(docker compose --env-file ../.env ps -q 2>/dev/null | wc -l | tr -d ' ')
 if [ "$RUNNING" -eq 0 ]; then
     echo "No containers running"
     exit 0
@@ -23,7 +23,7 @@ fi
 echo "Stopping Mittnaturkart v${VERSION}..."
 echo ""
 
-if docker compose down 2>/dev/null; then
+if docker compose --env-file ../.env down 2>/dev/null; then
     echo ""
     echo "=================================="
     echo "✓ Application stopped successfully"

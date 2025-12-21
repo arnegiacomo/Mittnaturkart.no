@@ -7,7 +7,7 @@ echo ""
 echo "=========================================="
 echo "Running API Tests"
 echo "=========================================="
-docker compose -f docker/docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from test-runner test-runner
+docker compose --env-file .env -f docker/docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from test-runner test-runner
 API_EXIT_CODE=$?
 
 # Run E2E tests
@@ -15,12 +15,12 @@ echo ""
 echo "=========================================="
 echo "Running E2E Tests"
 echo "=========================================="
-docker compose -f docker/docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from e2e-runner e2e-runner
+docker compose --env-file .env -f docker/docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from e2e-runner e2e-runner
 E2E_EXIT_CODE=$?
 
 echo ""
 echo "Cleaning up test environment..."
-docker compose -f docker/docker-compose.test.yml down -v
+docker compose --env-file .env -f docker/docker-compose.test.yml down -v
 
 echo ""
 echo "=========================================="

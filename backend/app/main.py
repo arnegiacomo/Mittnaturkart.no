@@ -2,6 +2,7 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from .routes.observations import router as observations_router
 from .routes.locations import router as locations_router
+from .routes.auth import router as auth_router
 from pathlib import Path
 import tomllib
 
@@ -29,6 +30,7 @@ app.add_middleware(
 api_v1_router = APIRouter(prefix="/api/v1")
 api_v1_router.include_router(observations_router)
 api_v1_router.include_router(locations_router)
+api_v1_router.include_router(auth_router)
 app.include_router(api_v1_router)
 
 @app.get("/")

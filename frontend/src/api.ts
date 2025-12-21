@@ -1,9 +1,34 @@
 import axios from 'axios'
-import type { Observation, Location, LocationWithCount, PaginatedResponse } from './types'
+import type { Observation, Location, LocationWithCount, PaginatedResponse, User, AuthToken } from './types'
+
+const TOKEN_KEY = 'auth_token'
+const TOKEN_EXPIRY_KEY = 'auth_token_expiry'
 
 const api = axios.create({
   baseURL: '/api/v1'
 })
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY)
+  const expiry = localStorage.getItem(TOKEN_EXPIRY_KEY)
+
+  if (token && expiry && Date.now() < Number(expiry)) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+
+  return config
+})
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(TOKEN_EXPIRY_KEY)
+    }
+    return Promise.reject(error)
+  }
+)
 
 export const observationApi = {
   getAll: (skip: number = 0, limit: number = 10, sortBy?: string, sortOrder?: string) =>
@@ -21,4 +46,17 @@ export const locationApi = {
   create: (data: Location) => api.post<Location>('/locations', data),
   update: (id: number, data: Partial<Location>) => api.put<Location>(`/locations/${id}`, data),
   delete: (id: number) => api.delete(`/locations/${id}`)
+}
+
+export const authApi = {
+  getLoginUrl: async () => {
+    const response = await api.get<{ url: string }>('/auth/login-url')
+    return response.data.url
+  },
+  callback: (code: string) => api.post<AuthToken>('/auth/callback', null, { params: { code } }),
+  getLogoutUrl: async () => {
+    const response = await api.get<{ url: string }>('/auth/logout-url')
+    return response.data.url
+  },
+  getCurrentUser: () => api.get<User>('/auth/me')
 }
