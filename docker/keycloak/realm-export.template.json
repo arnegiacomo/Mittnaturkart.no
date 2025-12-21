@@ -29,8 +29,8 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "${KEYCLOAK_CLIENT_SECRET}",
       "redirectUris": [
-        "http://localhost/auth/callback",
-        "${FRONTEND_URL}/auth/callback"
+        "http://localhost/*",
+        "${FRONTEND_URL}/*"
       ],
       "webOrigins": [
         "http://localhost",

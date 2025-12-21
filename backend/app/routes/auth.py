@@ -88,7 +88,8 @@ async def auth_callback(
 def get_logout_url():
     return {
         "url": f"{settings.keycloak_logout_url}?"
-               f"redirect_uri={settings.frontend_url}"
+               f"client_id={settings.keycloak_client_id}&"
+               f"post_logout_redirect_uri={settings.frontend_url}"
     }
 
 @router.get("/me", response_model=User)
