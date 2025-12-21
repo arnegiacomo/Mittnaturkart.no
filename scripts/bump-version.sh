@@ -45,51 +45,42 @@ if [ -n "$1" ]; then
     echo "Commit message: $COMMIT_MSG"
     echo "Bump level: $BUMP_LEVEL"
 else
-    DEFAULT_BASE_REF="${GITHUB_BASE_REF:-main}"
-    echo "Analyzing commits since $DEFAULT_BASE_REF..."
+    # Find the last version tag
+    LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "")
 
-    COMMITS=$(git log "$DEFAULT_BASE_REF"..HEAD --pretty=%B --reverse 2>/dev/null || git log -1 --pretty=%B)
-
-    if [ -z "$COMMITS" ]; then
-        echo "No commits found, using latest commit"
-        COMMITS=$(git log -1 --pretty=%B)
+    if [ -z "$LAST_TAG" ]; then
+        echo "No previous version tag found, analyzing all commits"
+        COMMIT_HASHES=$(git log --pretty=format:"%H" --reverse)
+    else
+        echo "Analyzing commits since last tag $LAST_TAG..."
+        COMMIT_HASHES=$(git log "$LAST_TAG..HEAD" --pretty=format:"%H" --reverse)
     fi
 
-    while IFS= read -r line; do
-        if [ -n "$line" ]; then
-            CURRENT_COMMIT="$CURRENT_COMMIT$line"$'\n'
-        else
-            if [ -n "$CURRENT_COMMIT" ]; then
-                BUMP_LEVEL=$(determine_bump_level "$CURRENT_COMMIT")
-                echo "Commit: $(echo "$CURRENT_COMMIT" | head -n 1 | cut -c 1-60)..."
-                echo "  Bump level: $BUMP_LEVEL"
+    if [ -z "$COMMIT_HASHES" ]; then
+        echo "No commits found since last tag, using latest commit"
+        COMMIT_HASHES=$(git log -1 --pretty=format:"%H")
+    fi
 
-                if [ "$BUMP_LEVEL" = "major" ]; then
-                    HIGHEST_BUMP="major"
-                elif [ "$BUMP_LEVEL" = "minor" ] && [ "$HIGHEST_BUMP" != "major" ]; then
-                    HIGHEST_BUMP="minor"
-                elif [ "$BUMP_LEVEL" = "patch" ] && [ "$HIGHEST_BUMP" = "none" ]; then
-                    HIGHEST_BUMP="patch"
-                fi
+    # Analyze each commit by hash
+    while IFS= read -r hash; do
+        if [ -n "$hash" ]; then
+            # Get the full commit message for this hash
+            COMMIT_MSG=$(git log -1 --pretty=format:"%B" "$hash")
 
-                CURRENT_COMMIT=""
+            BUMP_LEVEL=$(determine_bump_level "$COMMIT_MSG")
+            COMMIT_SUBJECT=$(git log -1 --pretty=format:"%s" "$hash")
+            echo "Commit: $(echo "$COMMIT_SUBJECT" | cut -c 1-60)..."
+            echo "  Bump level: $BUMP_LEVEL"
+
+            if [ "$BUMP_LEVEL" = "major" ]; then
+                HIGHEST_BUMP="major"
+            elif [ "$BUMP_LEVEL" = "minor" ] && [ "$HIGHEST_BUMP" != "major" ]; then
+                HIGHEST_BUMP="minor"
+            elif [ "$BUMP_LEVEL" = "patch" ] && [ "$HIGHEST_BUMP" = "none" ]; then
+                HIGHEST_BUMP="patch"
             fi
         fi
-    done <<< "$COMMITS"
-
-    if [ -n "$CURRENT_COMMIT" ]; then
-        BUMP_LEVEL=$(determine_bump_level "$CURRENT_COMMIT")
-        echo "Commit: $(echo "$CURRENT_COMMIT" | head -n 1 | cut -c 1-60)..."
-        echo "  Bump level: $BUMP_LEVEL"
-
-        if [ "$BUMP_LEVEL" = "major" ]; then
-            HIGHEST_BUMP="major"
-        elif [ "$BUMP_LEVEL" = "minor" ] && [ "$HIGHEST_BUMP" != "major" ]; then
-            HIGHEST_BUMP="minor"
-        elif [ "$BUMP_LEVEL" = "patch" ] && [ "$HIGHEST_BUMP" = "none" ]; then
-            HIGHEST_BUMP="patch"
-        fi
-    fi
+    done <<< "$COMMIT_HASHES"
 fi
 
 echo ""
