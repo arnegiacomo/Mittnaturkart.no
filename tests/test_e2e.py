@@ -49,7 +49,12 @@ def test_create_observation(page):
     page.wait_for_timeout(500)  # Wait for dropdown to open
     page.locator('[role="option"]').first.click()  # Select first option (Fugl)
 
-    # No location fields - observations can be created without a location
+    # Set time to 14:30 using PrimeVue DatePicker
+    time_input = page.locator('#time').locator('input').first
+    time_input.click()
+    page.wait_for_timeout(500)
+    time_input.fill("14:30")
+    print("✓ Time set to 14:30")
 
     # Fill notes
     page.locator('textarea[id="notes"]').fill("E2E test observation")
@@ -63,9 +68,10 @@ def test_create_observation(page):
     expect(page.locator(".p-toast")).to_contain_text("Opprettet")
     print("✓ Observation created successfully")
 
-    # Verify observation appears in table
+    # Verify observation appears in table with time
     expect(page.get_by_text("Granskog fugl")).to_be_visible()
-    print("✓ Observation visible in table")
+    expect(page.get_by_text("14:30")).to_be_visible()
+    print("✓ Observation visible in table with correct time")
 
 def test_edit_observation(page):
     print("\n--- Testing Edit Observation ---")
@@ -218,6 +224,12 @@ def test_create_observation_with_location(page):
     page.locator('#category').click()
     page.wait_for_timeout(500)
     page.locator('[role="option"]').first.click()
+
+    # Set time to 09:15 using PrimeVue DatePicker
+    time_input = page.locator('#time').locator('input').first
+    time_input.click()
+    page.wait_for_timeout(500)
+    time_input.fill("09:15")
 
     # Select location from dropdown
     page.locator('#location').click()

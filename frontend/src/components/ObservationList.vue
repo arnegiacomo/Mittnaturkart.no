@@ -28,9 +28,12 @@ const columns: TableColumn<Observation>[] = [
   { field: 'category', header: 'Kategori', sortable: true },
   {
     field: 'date',
-    header: 'Dato',
+    header: 'Dato og tid',
     sortable: true,
-    formatter: (data: Observation) => new Date(data.date).toLocaleDateString('no-NO')
+    formatter: (data: Observation) => {
+      const date = new Date(data.date)
+      return `${date.toLocaleDateString('no-NO')} ${date.toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' })}`
+    }
   },
   {
     field: 'notes',
