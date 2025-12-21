@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Button from 'primevue/button'
 import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import ConfirmDialog from 'primevue/confirmdialog'
 import { useConfirm } from 'primevue/useconfirm'
+import EntityTable from './EntityTable.vue'
 import ObservationForm from './ObservationForm.vue'
 import { useObservationStore } from '../stores/observations'
 import type { Observation } from '../types'
+import type { TableColumn } from './EntityTable.vue'
 import type { DataTablePageEvent } from 'primevue/datatable'
 
 const store = useObservationStore()
@@ -21,6 +20,22 @@ const editingObservation = ref<Observation | null>(null)
 const rows = ref(10)
 const first = ref(0)
 const initialLoading = ref(true)
+
+const columns: TableColumn<Observation>[] = [
+  { field: 'species', header: 'Art', sortable: true },
+  { field: 'category', header: 'Kategori', sortable: true },
+  {
+    field: 'date',
+    header: 'Dato',
+    sortable: true,
+    formatter: (data: Observation) => new Date(data.date).toLocaleDateString('no-NO')
+  },
+  {
+    field: 'notes',
+    header: 'Notater',
+    formatter: (data: Observation) => data.notes || '-'
+  }
+]
 
 onMounted(async () => {
   await loadObservations()
@@ -75,10 +90,6 @@ function handleDelete(observation: Observation) {
     }
   })
 }
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('no-NO')
-}
 </script>
 
 <template>
@@ -86,67 +97,20 @@ function formatDate(dateString: string) {
     <Toast />
     <ConfirmDialog />
 
-    <div class="toolbar">
-      <Button
-        label="Ny observasjon"
-        icon="pi pi-plus"
-        @click="handleCreate"
-        severity="success"
-      />
-    </div>
-
-    <DataTable
-      :value="store.observations"
+    <EntityTable
+      :data="store.observations"
+      :columns="columns"
       :loading="initialLoading"
-      stripedRows
-      lazy
-      paginator
+      :total-records="store.totalRecords"
       :rows="rows"
-      :totalRecords="store.totalRecords"
       :first="first"
+      create-button-label="Ny observasjon"
+      empty-message="Ingen observasjoner funnet"
+      @create="handleCreate"
+      @edit="handleEdit"
+      @delete="handleDelete"
       @page="onPage"
-      tableStyle="min-width: 50rem"
-      class="observation-table"
-    >
-      <template #empty>
-        <div class="empty-state">
-          <i class="pi pi-inbox" style="font-size: 3rem; color: #94a3b8;"></i>
-          <p>Ingen observasjoner funnet</p>
-        </div>
-      </template>
-
-      <Column field="species" header="Art" sortable />
-      <Column field="category" header="Kategori" sortable />
-      <Column field="date" header="Dato" sortable>
-        <template #body="{ data }">
-          {{ formatDate(data.date) }}
-        </template>
-      </Column>
-      <Column field="notes" header="Notater">
-        <template #body="{ data }">
-          {{ data.notes || '-' }}
-        </template>
-      </Column>
-      <Column header="Handlinger">
-        <template #body="{ data }">
-          <div class="actions">
-            <Button
-              icon="pi pi-pencil"
-              size="small"
-              text
-              @click="handleEdit(data)"
-            />
-            <Button
-              icon="pi pi-trash"
-              size="small"
-              severity="danger"
-              text
-              @click="handleDelete(data)"
-            />
-          </div>
-        </template>
-      </Column>
-    </DataTable>
+    />
 
     <ObservationForm
       v-model:visible="showDialog"
@@ -155,35 +119,3 @@ function formatDate(dateString: string) {
     />
   </div>
 </template>
-
-<style scoped>
-.toolbar {
-  margin-bottom: 1.5rem;
-}
-
-.observation-table {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.observation-table :deep(tbody) {
-  transition: opacity 0.2s ease-in-out;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 3rem;
-  color: #64748b;
-}
-
-.empty-state p {
-  margin-top: 1rem;
-  font-size: 1.1rem;
-}
-
-.actions {
-  display: flex;
-  gap: 0.5rem;
-}
-</style>

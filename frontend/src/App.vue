@@ -1,5 +1,11 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+import TabView from 'primevue/tabview'
+import TabPanel from 'primevue/tabpanel'
 import ObservationList from './components/ObservationList.vue'
+import LocationList from './components/LocationList.vue'
+
+const activeTab = ref(0)
 </script>
 
 <template>
@@ -8,9 +14,18 @@ import ObservationList from './components/ObservationList.vue'
       <h1>Mitt Naturkart</h1>
       <p>Spor dine naturobservasjoner</p>
     </header>
-    <main class="main">
-      <ObservationList />
-    </main>
+    <TabView v-model:activeIndex="activeTab" class="tabs">
+      <TabPanel header="Observasjoner" :value="0">
+        <div class="content">
+          <ObservationList />
+        </div>
+      </TabPanel>
+      <TabPanel header="Steder" :value="1">
+        <div class="content">
+          <LocationList />
+        </div>
+      </TabPanel>
+    </TabView>
   </div>
 </template>
 
@@ -39,10 +54,27 @@ import ObservationList from './components/ObservationList.vue'
   color: rgba(255,255,255,0.9);
 }
 
-.main {
-  padding: 2rem;
+.tabs {
+  background: white;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.tabs :deep(.p-tabview-nav) {
+  background: white;
+  border-bottom: none;
+  margin-bottom: 0;
+  padding: 0 2rem;
+}
+
+.tabs :deep(.p-tabview-panels) {
+  padding: 0;
+  background: transparent;
+}
+
+.content {
   max-width: 1400px;
   margin: 0 auto;
+  padding: 0 2rem 2rem;
 }
 </style>
 

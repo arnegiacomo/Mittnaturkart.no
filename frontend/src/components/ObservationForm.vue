@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -8,6 +8,7 @@ import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import { useToast } from 'primevue/usetoast'
 import { useObservationStore } from '../stores/observations'
+import { useLocationStore } from '../stores/locations'
 import type { Observation } from '../types'
 
 const props = defineProps<{
@@ -21,6 +22,7 @@ const emit = defineEmits<{
 }>()
 
 const store = useObservationStore()
+const locationStore = useLocationStore()
 const toast = useToast()
 
 const categories = [
@@ -31,6 +33,11 @@ const categories = [
   'Fisk',
   'Annet'
 ]
+
+onMounted(async () => {
+  // Load all locations for the dropdown
+  await locationStore.fetchLocations(0, 100)
+})
 
 const formData = ref<Observation>({
   species: '',
@@ -142,6 +149,20 @@ function handleCancel() {
           v-model="selectedDate"
           dateFormat="yy-mm-dd"
           required
+          class="w-full"
+        />
+      </div>
+
+      <div class="field">
+        <label for="location">Sted (valgfritt)</label>
+        <Select
+          id="location"
+          v-model="formData.location_id"
+          :options="locationStore.locations"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Velg sted..."
+          showClear
           class="w-full"
         />
       </div>
