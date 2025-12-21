@@ -12,7 +12,7 @@ jobs:
     permissions:
       contents: write
 
-    if: "!startsWith(github.event.head_commit.message, 'chore:') && !startsWith(github.event.head_commit.message, 'chore(version):')"
+    if: "!startsWith(github.event.head_commit.message, 'chore:') && !startsWith(github.event.head_commit.message, 'Merge')"
 
     steps:
       - name: Checkout code
