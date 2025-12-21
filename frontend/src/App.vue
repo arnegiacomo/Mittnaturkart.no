@@ -2,6 +2,8 @@
 import { ref, watch } from 'vue'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
+import ConfirmDialog from 'primevue/confirmdialog'
+import Toast from 'primevue/toast'
 import ObservationList from './components/ObservationList.vue'
 import LocationList from './components/LocationList.vue'
 import { useObservationStore } from './stores/observations'
@@ -25,6 +27,8 @@ watch(activeTab, async (newTab) => {
 
 <template>
   <div class="app">
+    <Toast />
+    <ConfirmDialog />
     <header class="header">
       <h1>Mitt Naturkart</h1>
       <p>Spor dine naturobservasjoner</p>

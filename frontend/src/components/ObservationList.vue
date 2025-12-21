@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
-import ConfirmDialog from 'primevue/confirmdialog'
 import { useConfirm } from 'primevue/useconfirm'
 import EntityTable from './EntityTable.vue'
 import ObservationForm from './ObservationForm.vue'
@@ -98,9 +96,6 @@ function handleDelete(observation: Observation) {
 
 <template>
   <div>
-    <Toast />
-    <ConfirmDialog />
-
     <EntityTable
       :data="store.observations"
       :columns="columns"
