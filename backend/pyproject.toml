@@ -2,7 +2,7 @@
 name = "mittnaturkart"
 version = "0.5.0"
 description = "Nature observation tracking application"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 
 [build-system]
 requires = ["setuptools>=61.0"]
