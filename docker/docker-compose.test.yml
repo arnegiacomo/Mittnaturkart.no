@@ -27,6 +27,14 @@ services:
       POSTGRES_PASSWORD: test_password
       POSTGRES_HOST: postgres-test
       POSTGRES_PORT: 5432
+      SECRET_KEY: test_secret_key
+      KEYCLOAK_SERVER_URL: http://localhost:8080/keycloak
+      KEYCLOAK_PUBLIC_URL: http://localhost:8080/keycloak
+      KEYCLOAK_REALM: test
+      KEYCLOAK_CLIENT_ID: test
+      KEYCLOAK_CLIENT_SECRET: test
+      FRONTEND_URL: http://nginx
+      DISABLE_AUTH: "true"
     expose:
       - "8000"
     depends_on:
@@ -45,7 +53,7 @@ services:
     environment:
       BACKEND_PORT: 8000
     volumes:
-      - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./nginx/nginx.test.conf.template:/etc/nginx/templates/default.conf.template:ro
     depends_on:
       - backend
       - frontend

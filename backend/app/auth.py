@@ -12,7 +12,12 @@ from .database import get_db
 from .models import User as UserModel
 from .schemas import TokenData
 
-security = HTTPBearer()
+def get_security():
+    if settings.disable_auth:
+        return HTTPBearer(auto_error=False)
+    return HTTPBearer()
+
+security = get_security()
 
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
@@ -73,11 +78,26 @@ async def get_user_info(access_token: str) -> dict:
         return response.json()
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: Session = Depends(get_db)
 ) -> UserModel:
     import logging
     logger = logging.getLogger(__name__)
+
+    # Test mode: bypass authentication and return/create a test user
+    if settings.disable_auth:
+        logger.info("Auth disabled - using test user")
+        test_user = db.query(UserModel).filter(UserModel.email == "test@example.com").first()
+        if not test_user:
+            test_user = UserModel(
+                keycloak_id="test-user-id",
+                email="test@example.com",
+                name="Test User"
+            )
+            db.add(test_user)
+            db.commit()
+            db.refresh(test_user)
+        return test_user
 
     token = credentials.credentials
     logger.info(f"Validating token: {token[:20]}...")

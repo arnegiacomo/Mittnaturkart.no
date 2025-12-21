@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 
 API_URL = os.getenv("API_URL", "http://localhost:8000")
+HEADERS = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2IiwiZW1haWwiOiIxMjNAMTIzLmNvbSIsImV4cCI6MTc2Njk1Nzk3M30.Gf2rRY-Ur6BhC16dE9E6iwrXz_Cm3z8EtS6vfcQeOTM"}
 
 def wait_for_api(max_retries=30):
     print("Waiting for API to be ready...")
@@ -58,7 +59,7 @@ def test_create_location():
         "description": "A test location in Oslo",
         "address": "Oslo, Norway"
     }
-    response = requests.post(f"{API_URL}/api/v1/locations", json=location)
+    response = requests.post(f"{API_URL}/api/v1/locations", json=location, headers=HEADERS)
     assert response.status_code == 201, f"Create failed: {response.status_code} - {response.text}"
     data = response.json()
     assert data["name"] == location["name"]
@@ -70,7 +71,7 @@ def test_create_location():
 
 def test_get_all_locations():
     print("\n--- Testing Get All Locations ---")
-    response = requests.get(f"{API_URL}/api/v1/locations")
+    response = requests.get(f"{API_URL}/api/v1/locations", headers=HEADERS)
     assert response.status_code == 200, f"Get all failed: {response.status_code}"
     data = response.json()
     assert isinstance(data, dict), "Response should be a dict with 'data' and 'total' keys"
@@ -86,7 +87,7 @@ def test_get_all_locations():
 
 def test_get_location(location_id):
     print("\n--- Testing Get Single Location ---")
-    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}")
+    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}", headers=HEADERS)
     assert response.status_code == 200, f"Get single failed: {response.status_code}"
     data = response.json()
     assert data["id"] == location_id
@@ -99,7 +100,7 @@ def test_update_location(location_id):
     update_data = {
         "description": "Updated test location"
     }
-    response = requests.put(f"{API_URL}/api/v1/locations/{location_id}", json=update_data)
+    response = requests.put(f"{API_URL}/api/v1/locations/{location_id}", json=update_data, headers=HEADERS)
     assert response.status_code == 200, f"Update failed: {response.status_code}"
     data = response.json()
     assert data["description"] == update_data["description"]
@@ -114,7 +115,7 @@ def test_create_observation(location_id):
         "notes": "Test observation",
         "category": "Fugl"
     }
-    response = requests.post(f"{API_URL}/api/v1/observations", json=observation)
+    response = requests.post(f"{API_URL}/api/v1/observations", json=observation, headers=HEADERS)
     assert response.status_code == 201, f"Create failed: {response.status_code} - {response.text}"
     data = response.json()
     assert data["species"] == observation["species"]
@@ -126,7 +127,7 @@ def test_create_observation(location_id):
 
 def test_get_all_observations():
     print("\n--- Testing Get All Observations ---")
-    response = requests.get(f"{API_URL}/api/v1/observations")
+    response = requests.get(f"{API_URL}/api/v1/observations", headers=HEADERS)
     assert response.status_code == 200, f"Get all failed: {response.status_code}"
     data = response.json()
     assert isinstance(data, dict), "Response should be a dict with 'data' and 'total' keys"
@@ -140,7 +141,7 @@ def test_get_all_observations():
 
 def test_get_observation(observation_id):
     print("\n--- Testing Get Single Observation ---")
-    response = requests.get(f"{API_URL}/api/v1/observations/{observation_id}")
+    response = requests.get(f"{API_URL}/api/v1/observations/{observation_id}", headers=HEADERS)
     assert response.status_code == 200, f"Get single failed: {response.status_code}"
     data = response.json()
     assert data["id"] == observation_id
@@ -152,7 +153,7 @@ def test_update_observation(observation_id):
     update_data = {
         "notes": "Updated test observation"
     }
-    response = requests.put(f"{API_URL}/api/v1/observations/{observation_id}", json=update_data)
+    response = requests.put(f"{API_URL}/api/v1/observations/{observation_id}", json=update_data, headers=HEADERS)
     assert response.status_code == 200, f"Update failed: {response.status_code}"
     data = response.json()
     assert data["notes"] == update_data["notes"]
@@ -160,21 +161,21 @@ def test_update_observation(observation_id):
 
 def test_delete_observation(observation_id):
     print("\n--- Testing Delete Observation ---")
-    response = requests.delete(f"{API_URL}/api/v1/observations/{observation_id}")
+    response = requests.delete(f"{API_URL}/api/v1/observations/{observation_id}", headers=HEADERS)
     assert response.status_code == 204, f"Delete failed: {response.status_code}"
 
     # Verify deletion
-    response = requests.get(f"{API_URL}/api/v1/observations/{observation_id}")
+    response = requests.get(f"{API_URL}/api/v1/observations/{observation_id}", headers=HEADERS)
     assert response.status_code == 404, "Observation should not exist after deletion"
     print(f"✓ Deleted observation ID: {observation_id}")
 
 def test_delete_location(location_id):
     print("\n--- Testing Delete Location ---")
-    response = requests.delete(f"{API_URL}/api/v1/locations/{location_id}")
+    response = requests.delete(f"{API_URL}/api/v1/locations/{location_id}", headers=HEADERS)
     assert response.status_code == 204, f"Delete failed: {response.status_code}"
 
     # Verify deletion
-    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}")
+    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}", headers=HEADERS)
     assert response.status_code == 404, "Location should not exist after deletion"
     print(f"✓ Deleted location ID: {location_id}")
 
@@ -186,11 +187,11 @@ def test_observation_count_on_location():
         "latitude": 59.9139,
         "longitude": 10.7522
     }
-    response = requests.post(f"{API_URL}/api/v1/locations", json=location)
+    response = requests.post(f"{API_URL}/api/v1/locations", json=location, headers=HEADERS)
     assert response.status_code == 201
     location_id = response.json()["id"]
 
-    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}")
+    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}", headers=HEADERS)
     assert response.status_code == 200
     assert response.json()["observation_count"] == 0, "New location should have 0 observations"
     print("✓ New location has observation_count = 0")
@@ -201,11 +202,11 @@ def test_observation_count_on_location():
         "location_id": location_id,
         "category": "Fugl"
     }
-    response = requests.post(f"{API_URL}/api/v1/observations", json=observation1)
+    response = requests.post(f"{API_URL}/api/v1/observations", json=observation1, headers=HEADERS)
     assert response.status_code == 201
     obs1_id = response.json()["id"]
 
-    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}")
+    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}", headers=HEADERS)
     assert response.status_code == 200
     assert response.json()["observation_count"] == 1, "Location should have 1 observation"
     print("✓ After creating 1 observation, count = 1")
@@ -216,23 +217,23 @@ def test_observation_count_on_location():
         "location_id": location_id,
         "category": "Fugl"
     }
-    response = requests.post(f"{API_URL}/api/v1/observations", json=observation2)
+    response = requests.post(f"{API_URL}/api/v1/observations", json=observation2, headers=HEADERS)
     assert response.status_code == 201
     obs2_id = response.json()["id"]
 
-    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}")
+    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}", headers=HEADERS)
     assert response.status_code == 200
     assert response.json()["observation_count"] == 2, "Location should have 2 observations"
     print("✓ After creating 2 observations, count = 2")
 
-    requests.delete(f"{API_URL}/api/v1/observations/{obs1_id}")
+    requests.delete(f"{API_URL}/api/v1/observations/{obs1_id}", headers=HEADERS)
 
-    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}")
+    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}", headers=HEADERS)
     assert response.status_code == 200
     assert response.json()["observation_count"] == 1, "Location should have 1 observation after deleting one"
     print("✓ After deleting 1 observation, count = 1")
 
-    requests.delete(f"{API_URL}/api/v1/observations/{obs2_id}")
+    requests.delete(f"{API_URL}/api/v1/observations/{obs2_id}", headers=HEADERS)
     requests.delete(f"{API_URL}/api/v1/locations/{location_id}")
 
 def test_location_deletion_nullifies_observation():
@@ -253,11 +254,11 @@ def test_location_deletion_nullifies_observation():
         "location_id": location_id,
         "category": "Fugl"
     }
-    response = requests.post(f"{API_URL}/api/v1/observations", json=observation)
+    response = requests.post(f"{API_URL}/api/v1/observations", json=observation, headers=HEADERS)
     assert response.status_code == 201
     obs_id = response.json()["id"]
 
-    response = requests.get(f"{API_URL}/api/v1/observations/{obs_id}")
+    response = requests.get(f"{API_URL}/api/v1/observations/{obs_id}", headers=HEADERS)
     assert response.status_code == 200
     assert response.json()["location_id"] == location_id, "Observation should have location_id"
     assert response.json()["location"] is not None, "Observation should have location object"
@@ -265,13 +266,13 @@ def test_location_deletion_nullifies_observation():
 
     requests.delete(f"{API_URL}/api/v1/locations/{location_id}")
 
-    response = requests.get(f"{API_URL}/api/v1/observations/{obs_id}")
+    response = requests.get(f"{API_URL}/api/v1/observations/{obs_id}", headers=HEADERS)
     assert response.status_code == 200
     assert response.json()["location_id"] is None, "Observation location_id should be None after location deletion"
     assert response.json()["location"] is None, "Observation location should be None after location deletion"
     print("✓ Observation location_id and location are None after location deletion")
 
-    requests.delete(f"{API_URL}/api/v1/observations/{obs_id}")
+    requests.delete(f"{API_URL}/api/v1/observations/{obs_id}", headers=HEADERS)
 
 def test_observation_sorting():
     print("\n--- Testing Observation Sorting ---")
@@ -284,32 +285,32 @@ def test_observation_sorting():
 
     created_ids = []
     for obs in observations:
-        response = requests.post(f"{API_URL}/api/v1/observations", json=obs)
+        response = requests.post(f"{API_URL}/api/v1/observations", json=obs, headers=HEADERS)
         assert response.status_code == 201
         created_ids.append(response.json()["id"])
 
-    response = requests.get(f"{API_URL}/api/v1/observations", params={"sort_by": "species", "sort_order": "asc"})
+    response = requests.get(f"{API_URL}/api/v1/observations", params={"sort_by": "species", "sort_order": "asc"}, headers=HEADERS)
     assert response.status_code == 200
     data = response.json()["data"]
     species_list = [obs["species"] for obs in data]
     assert species_list == sorted(species_list), "Species should be sorted ascending"
     print("✓ Observations sorted by species (asc)")
 
-    response = requests.get(f"{API_URL}/api/v1/observations", params={"sort_by": "species", "sort_order": "desc"})
+    response = requests.get(f"{API_URL}/api/v1/observations", params={"sort_by": "species", "sort_order": "desc"}, headers=HEADERS)
     assert response.status_code == 200
     data = response.json()["data"]
     species_list = [obs["species"] for obs in data]
     assert species_list == sorted(species_list, reverse=True), "Species should be sorted descending"
     print("✓ Observations sorted by species (desc)")
 
-    response = requests.get(f"{API_URL}/api/v1/observations", params={"sort_by": "date", "sort_order": "asc"})
+    response = requests.get(f"{API_URL}/api/v1/observations", params={"sort_by": "date", "sort_order": "asc"}, headers=HEADERS)
     assert response.status_code == 200
     data = response.json()["data"]
     date_list = [obs["date"] for obs in data]
     assert date_list == sorted(date_list), "Dates should be sorted ascending"
     print("✓ Observations sorted by date (asc)")
 
-    response = requests.get(f"{API_URL}/api/v1/observations", params={"sort_by": "category", "sort_order": "asc"})
+    response = requests.get(f"{API_URL}/api/v1/observations", params={"sort_by": "category", "sort_order": "asc"}, headers=HEADERS)
     assert response.status_code == 200
     data = response.json()["data"]
     category_list = [obs["category"] for obs in data]
@@ -317,7 +318,7 @@ def test_observation_sorting():
     print("✓ Observations sorted by category (asc)")
 
     for obs_id in created_ids:
-        requests.delete(f"{API_URL}/api/v1/observations/{obs_id}")
+        requests.delete(f"{API_URL}/api/v1/observations/{obs_id}", headers=HEADERS)
 
 def test_location_sorting():
     print("\n--- Testing Location Sorting ---")
@@ -330,25 +331,25 @@ def test_location_sorting():
 
     created_ids = []
     for loc in locations:
-        response = requests.post(f"{API_URL}/api/v1/locations", json=loc)
+        response = requests.post(f"{API_URL}/api/v1/locations", json=loc, headers=HEADERS)
         assert response.status_code == 201
         created_ids.append(response.json()["id"])
 
-    response = requests.get(f"{API_URL}/api/v1/locations", params={"sort_by": "name", "sort_order": "asc"})
+    response = requests.get(f"{API_URL}/api/v1/locations", params={"sort_by": "name", "sort_order": "asc"}, headers=HEADERS)
     assert response.status_code == 200
     data = response.json()["data"]
     name_list = [loc["name"] for loc in data]
     assert name_list == sorted(name_list), "Names should be sorted ascending"
     print("✓ Locations sorted by name (asc)")
 
-    response = requests.get(f"{API_URL}/api/v1/locations", params={"sort_by": "name", "sort_order": "desc"})
+    response = requests.get(f"{API_URL}/api/v1/locations", params={"sort_by": "name", "sort_order": "desc"}, headers=HEADERS)
     assert response.status_code == 200
     data = response.json()["data"]
     name_list = [loc["name"] for loc in data]
     assert name_list == sorted(name_list, reverse=True), "Names should be sorted descending"
     print("✓ Locations sorted by name (desc)")
 
-    response = requests.get(f"{API_URL}/api/v1/locations", params={"sort_by": "address", "sort_order": "asc"})
+    response = requests.get(f"{API_URL}/api/v1/locations", params={"sort_by": "address", "sort_order": "asc"}, headers=HEADERS)
     assert response.status_code == 200
     data = response.json()["data"]
     address_list = [loc["address"] if loc["address"] else "" for loc in data]
@@ -356,7 +357,7 @@ def test_location_sorting():
     print("✓ Locations sorted by address (asc)")
 
     for loc_id in created_ids:
-        requests.delete(f"{API_URL}/api/v1/locations/{loc_id}")
+        requests.delete(f"{API_URL}/api/v1/locations/{loc_id}", headers=HEADERS)
 
 def run_tests():
     print("=" * 50)
