@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export VERSION=$(cat VERSION 2>/dev/null || echo "1.0.0")
+export VERSION=$(grep '^version = ' backend/pyproject.toml 2>/dev/null | sed 's/version = "\(.*\)"/\1/' || echo "1.0.0")
 
 cd docker
 docker compose up -d --build

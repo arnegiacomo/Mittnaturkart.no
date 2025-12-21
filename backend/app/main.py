@@ -2,14 +2,15 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from .routes.observations import router as observations_router
 from pathlib import Path
+import tomllib
 
 def get_version():
-    version_file = Path(__file__).parent.parent / "VERSION"
-    if not version_file.exists():
-        version_file = Path(__file__).parent.parent.parent / "VERSION"
+    pyproject_file = Path(__file__).parent.parent / "pyproject.toml"
     try:
-        return version_file.read_text().strip()
-    except FileNotFoundError:
+        with open(pyproject_file, "rb") as f:
+            data = tomllib.load(f)
+            return data["project"]["version"]
+    except (FileNotFoundError, KeyError):
         return "1.0.0"
 
 VERSION = get_version()

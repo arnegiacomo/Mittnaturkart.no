@@ -2,13 +2,14 @@
 
 set -e
 
-VERSION_FILE="VERSION"
+PYPROJECT_FILE="backend/pyproject.toml"
 
-if [ ! -f "$VERSION_FILE" ]; then
-    echo "1.0.0" > "$VERSION_FILE"
+if [ ! -f "$PYPROJECT_FILE" ]; then
+    echo "Error: $PYPROJECT_FILE not found"
+    exit 1
 fi
 
-CURRENT_VERSION=$(cat "$VERSION_FILE")
+CURRENT_VERSION=$(grep '^version = ' "$PYPROJECT_FILE" | sed 's/version = "\(.*\)"/\1/')
 echo "Current version: $CURRENT_VERSION"
 
 IFS='.' read -r -a version_parts <<< "$CURRENT_VERSION"
@@ -42,7 +43,9 @@ fi
 NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
 echo "New version: $NEW_VERSION"
 
-echo "$NEW_VERSION" > "$VERSION_FILE"
+sed -i.bak "s/version = \".*\"/version = \"$NEW_VERSION\"/" "$PYPROJECT_FILE"
+rm "${PYPROJECT_FILE}.bak"
+echo "Updated $PYPROJECT_FILE"
 
 if [ -f "frontend/package.json" ]; then
     sed -i.bak "s/\"version\": \".*\"/\"version\": \"$NEW_VERSION\"/" frontend/package.json

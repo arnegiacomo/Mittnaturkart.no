@@ -31,13 +31,13 @@ jobs:
         run: |
           chmod +x scripts/bump-version.sh
           ./scripts/bump-version.sh
-          NEW_VERSION=$(cat VERSION)
+          NEW_VERSION=$(grep '^version = ' backend/pyproject.toml | sed 's/version = "\(.*\)"/\1/')
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Check for changes
         id: check_changes
         run: |
-          if git diff --quiet VERSION; then
+          if git diff --quiet backend/pyproject.toml frontend/package.json; then
             echo "changed=false" >> $GITHUB_OUTPUT
           else
             echo "changed=true" >> $GITHUB_OUTPUT
@@ -47,7 +47,7 @@ jobs:
         if: steps.check_changes.outputs.changed == 'true'
         run: |
           NEW_VERSION=${{ steps.bump.outputs.new_version }}
-          git add VERSION frontend/package.json
+          git add backend/pyproject.toml frontend/package.json
           git commit -m "chore(version): bump to $NEW_VERSION [skip ci]"
           git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
           git push origin main

@@ -46,7 +46,7 @@ jobs:
         if: steps.frontend_changes.outputs.changed == 'true'
         run: |
           echo "Building frontend..."
-          export VERSION=$(cat VERSION 2>/dev/null || echo "1.0.0")
+          export VERSION=$(grep '^version = ' backend/pyproject.toml 2>/dev/null | sed 's/version = "\(.*\)"/\1/' || echo "1.0.0")
           cd docker
           docker compose build frontend
 
@@ -54,7 +54,7 @@ jobs:
         if: steps.backend_changes.outputs.changed == 'true'
         run: |
           echo "Building backend..."
-          export VERSION=$(cat VERSION 2>/dev/null || echo "1.0.0")
+          export VERSION=$(grep '^version = ' backend/pyproject.toml 2>/dev/null | sed 's/version = "\(.*\)"/\1/' || echo "1.0.0")
           cd docker
           docker compose build backend
 

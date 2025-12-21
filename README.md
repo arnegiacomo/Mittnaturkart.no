@@ -28,6 +28,7 @@ cd frontend
 ```
 
 ## Testing
+Tester kjøres gjennom en egen Docker Compose-konfigurasjon. Dette lar oss teste både API og frontend i et isolert miljø, og sikrer at testene kjører mot samme oppsett som produksjon, slik at vi dekker en så stor del av verdikjeden som mulig.
 
 Kjør alle tester (API + E2E):
 ```bash
@@ -35,21 +36,12 @@ Kjør alle tester (API + E2E):
 ```
 
 Testene inkluderer:
-- **API-tester**: Tester backend endpoints via Nginx
+- **API-tester**: Tester backend endpoints med HTTP-kall
 - **E2E-tester**: Playwright-baserte tester av frontend (klikk, input, etc.)
-
-Tester kjøres automatisk ved push til GitHub (unntatt `chore:` commits).
 
 ## CI/CD
 
-**Automatisk testing:** Kjører på alle branches ved push og pull requests til main.
-
-**Automatisk versjonering:** Ved push til main:
-- `fix:` → +0.0.1 (patch)
-- `feat:` → +0.1.0 (minor)
-- `chore:` → ingen endring
-
-Versjonsnummer oppdateres automatisk i `VERSION` fil og API. Git-tag (f.eks. `v1.0.1`) opprettes automatisk.
+Automatisk testing og versjonering ved push til main. Versjon bumpes basert på commit-prefiks (`fix:`, `feat:`).
 
 ## Arkitektur
 
