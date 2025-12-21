@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from datetime import datetime
+from pydantic import BaseModel, field_validator
+from datetime import datetime, timezone
 from typing import Optional, List, Generic, TypeVar, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -11,6 +11,15 @@ class ObservationBase(BaseModel):
     location_id: Optional[int] = None
     notes: Optional[str] = None
     category: str
+
+    @field_validator('date', mode='before')
+    @classmethod
+    def ensure_timezone_aware(cls, v):
+        if isinstance(v, str):
+            return v  # Pydantic handles ISO 8601 parsing
+        if isinstance(v, datetime) and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # Assume UTC if naive
+        return v
 
 class ObservationCreate(ObservationBase):
     pass
@@ -27,6 +36,15 @@ class Observation(ObservationBase):
     created_at: datetime
     updated_at: datetime
     location: Optional['Location'] = None
+
+    @field_validator('created_at', 'updated_at', mode='before')
+    @classmethod
+    def ensure_timestamps_timezone_aware(cls, v):
+        if isinstance(v, str):
+            return v  # Pydantic handles ISO 8601 parsing
+        if isinstance(v, datetime) and v.tzinfo is None:
+            return v.replace(tzinfo=timezone.utc)  # Assume UTC if naive
+        return v
 
     class Config:
         from_attributes = True

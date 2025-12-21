@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { observationApi } from '../api'
 import type { Observation } from '../types'
+import { t } from '../i18n'
 
 export const useObservationStore = defineStore('observations', () => {
   const observations = ref<Observation[]>([])
@@ -16,7 +17,7 @@ export const useObservationStore = defineStore('observations', () => {
       observations.value = response.data.data
       totalRecords.value = response.data.total
     } catch (e) {
-      error.value = 'Kunne ikke laste observasjoner'
+      error.value = t('observations.messages.error_fetch')
       console.error(e)
     }
   }
@@ -28,7 +29,7 @@ export const useObservationStore = defineStore('observations', () => {
       const response = await observationApi.create(observation)
       observations.value.push(response.data)
     } catch (e) {
-      error.value = 'Kunne ikke opprette observasjon'
+      error.value = t('observations.messages.error_create')
       console.error(e)
       throw e
     } finally {
@@ -46,7 +47,7 @@ export const useObservationStore = defineStore('observations', () => {
         observations.value[index] = response.data
       }
     } catch (e) {
-      error.value = 'Kunne ikke oppdatere observasjon'
+      error.value = t('observations.messages.error_update')
       console.error(e)
       throw e
     } finally {
@@ -61,7 +62,7 @@ export const useObservationStore = defineStore('observations', () => {
       await observationApi.delete(id)
       observations.value = observations.value.filter(o => o.id !== id)
     } catch (e) {
-      error.value = 'Kunne ikke slette observasjon'
+      error.value = t('observations.messages.error_delete')
       console.error(e)
       throw e
     } finally {

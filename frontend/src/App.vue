@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import TabView from 'primevue/tabview'
+import Tabs from 'primevue/tabs'
+import TabList from 'primevue/tablist'
+import Tab from 'primevue/tab'
+import TabPanels from 'primevue/tabpanels'
 import TabPanel from 'primevue/tabpanel'
 import ConfirmDialog from 'primevue/confirmdialog'
 import Toast from 'primevue/toast'
@@ -8,17 +11,19 @@ import ObservationList from './components/ObservationList.vue'
 import LocationList from './components/LocationList.vue'
 import { useObservationStore } from './stores/observations'
 import { useLocationStore } from './stores/locations'
+import { useI18n } from './composables/useI18n'
 
-const activeTab = ref(0)
+const { t } = useI18n()
+const activeTab = ref('0')
 const observationStore = useObservationStore()
 const locationStore = useLocationStore()
 
 // Refresh data when switching tabs
 watch(activeTab, async (newTab) => {
-  if (newTab === 0) {
+  if (newTab === '0') {
     // Switching to Observasjoner - refresh observations
     await observationStore.fetchObservations(0, 10)
-  } else if (newTab === 1) {
+  } else if (newTab === '1') {
     // Switching to Steder - refresh locations
     await locationStore.fetchLocations(0, 10)
   }
@@ -30,21 +35,27 @@ watch(activeTab, async (newTab) => {
     <Toast />
     <ConfirmDialog />
     <header class="header">
-      <h1>Mitt Naturkart</h1>
-      <p>Spor dine naturobservasjoner</p>
+      <h1>{{ t('app.title') }}</h1>
+      <p>{{ t('app.subtitle') }}</p>
     </header>
-    <TabView v-model:activeIndex="activeTab" class="tabs">
-      <TabPanel header="Observasjoner" :value="0">
-        <div class="content">
-          <ObservationList />
-        </div>
-      </TabPanel>
-      <TabPanel header="Steder" :value="1">
-        <div class="content">
-          <LocationList />
-        </div>
-      </TabPanel>
-    </TabView>
+    <Tabs v-model:value="activeTab" class="tabs">
+      <TabList>
+        <Tab value="0">{{ t('navigation.observations') }}</Tab>
+        <Tab value="1">{{ t('navigation.locations') }}</Tab>
+      </TabList>
+      <TabPanels>
+        <TabPanel value="0">
+          <div class="content">
+            <ObservationList />
+          </div>
+        </TabPanel>
+        <TabPanel value="1">
+          <div class="content">
+            <LocationList />
+          </div>
+        </TabPanel>
+      </TabPanels>
+    </Tabs>
   </div>
 </template>
 
@@ -75,17 +86,40 @@ watch(activeTab, async (newTab) => {
 
 .tabs {
   background: white;
-  border-bottom: 2px solid #e5e7eb;
 }
 
-.tabs :deep(.p-tabview-nav) {
+.tabs :deep(.p-tablist) {
   background: white;
-  border-bottom: none;
-  margin-bottom: 0;
+  border-bottom: 2px solid #e5e7eb;
   padding: 0 2rem;
+  display: flex;
+  gap: 0;
 }
 
-.tabs :deep(.p-tabview-panels) {
+.tabs :deep(.p-tab) {
+  padding: 1rem 1.5rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #6b7280;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+  margin-bottom: -2px;
+}
+
+.tabs :deep(.p-tab:hover) {
+  color: #10b981;
+  background: #f0fdf4;
+}
+
+.tabs :deep(.p-tab[data-p-active="true"]) {
+  color: #10b981;
+  border-bottom-color: #10b981;
+  background: transparent;
+}
+
+.tabs :deep(.p-tabpanels) {
   padding: 0;
   background: transparent;
 }

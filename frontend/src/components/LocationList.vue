@@ -9,7 +9,9 @@ import { useObservationStore } from '../stores/observations'
 import type { LocationWithCount } from '../types'
 import type { TableColumn } from './EntityTable.vue'
 import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable'
+import { useI18n } from '../composables/useI18n'
 
+const { t } = useI18n()
 const store = useLocationStore()
 const observationStore = useObservationStore()
 const toast = useToast()
@@ -24,15 +26,15 @@ const sortBy = ref('id')
 const sortOrder = ref('desc')
 
 const columns: TableColumn<LocationWithCount>[] = [
-  { field: 'name', header: 'Navn', sortable: true },
+  { field: 'name', header: t('locations.columns.name'), sortable: true },
   {
     field: 'address',
-    header: 'Adresse',
+    header: t('locations.columns.address'),
     sortable: true,
     formatter: (data: LocationWithCount) => data.address || '-'
   },
   {
-    header: 'Koordinater',
+    header: t('locations.columns.coordinates'),
     formatter: (data: LocationWithCount) => {
       if (!data.latitude || !data.longitude) return '-'
       return `${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}`
@@ -40,13 +42,13 @@ const columns: TableColumn<LocationWithCount>[] = [
   },
   {
     field: 'observation_count',
-    header: 'Observasjoner',
+    header: t('locations.columns.observations'),
     sortable: true,
     component: (data: LocationWithCount) => h('span', { class: 'count-badge' }, data.observation_count)
   },
   {
     field: 'description',
-    header: 'Beskrivelse',
+    header: t('locations.columns.description'),
     formatter: (data: LocationWithCount) => data.description || '-'
   }
 ]
@@ -84,11 +86,11 @@ function handleEdit(location: LocationWithCount) {
 
 function handleDelete(location: LocationWithCount) {
   confirm.require({
-    message: `Er du sikker på at du vil slette stedet "${location.name}"?`,
-    header: 'Bekreft sletting',
+    message: t('locations.delete_confirm', { name: location.name }),
+    header: t('locations.delete_header'),
     icon: 'pi pi-exclamation-triangle',
-    acceptLabel: 'Ja',
-    rejectLabel: 'Nei',
+    acceptLabel: t('confirmDialog.accept'),
+    rejectLabel: t('confirmDialog.reject'),
     accept: async () => {
       try {
         await store.deleteLocation(location.id!)
@@ -97,15 +99,15 @@ function handleDelete(location: LocationWithCount) {
         await observationStore.fetchObservations(0, 10)
         toast.add({
           severity: 'success',
-          summary: 'Slettet',
-          detail: 'Stedet ble slettet',
+          summary: t('toast.success'),
+          detail: t('locations.messages.deleted'),
           life: 3000
         })
       } catch {
         toast.add({
           severity: 'error',
-          summary: 'Feil',
-          detail: 'Kunne ikke slette stedet',
+          summary: t('toast.error'),
+          detail: t('locations.messages.error_delete'),
           life: 3000
         })
       }
@@ -123,9 +125,9 @@ function handleDelete(location: LocationWithCount) {
       :total-records="store.totalRecords"
       :rows="rows"
       :first="first"
-      create-button-label="Nytt sted"
+      :create-button-label="t('locations.new')"
       empty-icon="pi pi-map-marker"
-      empty-message="Ingen steder funnet"
+      :empty-message="t('locations.none_found')"
       @create="handleCreate"
       @edit="handleEdit"
       @delete="handleDelete"

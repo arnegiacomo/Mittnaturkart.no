@@ -10,6 +10,9 @@ import { useToast } from 'primevue/usetoast'
 import { useObservationStore } from '../stores/observations'
 import { useLocationStore } from '../stores/locations'
 import type { Observation } from '../types'
+import { useI18n } from '../composables/useI18n'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   visible: boolean
@@ -26,12 +29,12 @@ const locationStore = useLocationStore()
 const toast = useToast()
 
 const categories = [
-  'Fugl',
-  'Pattedyr',
-  'Insekt',
-  'Plante',
-  'Fisk',
-  'Annet'
+  { label: t('observations.categories.bird'), value: 'Fugl' },
+  { label: t('observations.categories.mammal'), value: 'Pattedyr' },
+  { label: t('observations.categories.insect'), value: 'Insekt' },
+  { label: t('observations.categories.plant'), value: 'Plante' },
+  { label: t('observations.categories.fish'), value: 'Fisk' },
+  { label: t('observations.categories.other'), value: 'Annet' }
 ]
 
 onMounted(async () => {
@@ -95,16 +98,16 @@ async function handleSubmit() {
       await store.updateObservation(props.observation.id, submitData)
       toast.add({
         severity: 'success',
-        summary: 'Oppdatert',
-        detail: 'Observasjonen ble oppdatert',
+        summary: t('toast.success'),
+        detail: t('observations.messages.updated'),
         life: 3000
       })
     } else {
       await store.createObservation(submitData)
       toast.add({
         severity: 'success',
-        summary: 'Opprettet',
-        detail: 'Observasjonen ble opprettet',
+        summary: t('toast.success'),
+        detail: t('observations.messages.created'),
         life: 3000
       })
     }
@@ -116,8 +119,8 @@ async function handleSubmit() {
   } catch {
     toast.add({
       severity: 'error',
-      summary: 'Feil',
-      detail: 'Kunne ikke lagre observasjonen',
+      summary: t('toast.error'),
+      detail: t('observations.messages.error_create'),
       life: 3000
     })
   }
@@ -133,13 +136,13 @@ function handleCancel() {
   <Dialog
     :visible="visible"
     @update:visible="emit('update:visible', $event)"
-    :header="observation ? 'Rediger observasjon' : 'Ny observasjon'"
+    :header="observation ? t('observations.edit') : t('observations.new')"
     :style="{ width: '500px' }"
     modal
   >
     <form @submit.prevent="handleSubmit" class="form">
       <div class="field">
-        <label for="species">Art *</label>
+        <label for="species">{{ t('observations.fields.species') }} *</label>
         <InputText
           id="species"
           v-model="formData.species"
@@ -149,18 +152,20 @@ function handleCancel() {
       </div>
 
       <div class="field">
-        <label for="category">Kategori *</label>
+        <label for="category">{{ t('observations.fields.category') }} *</label>
         <Select
           id="category"
           v-model="formData.category"
           :options="categories"
+          optionLabel="label"
+          optionValue="value"
           required
           class="w-full"
         />
       </div>
 
       <div class="field">
-        <label for="date">Dato *</label>
+        <label for="date">{{ t('observations.fields.date') }} *</label>
         <DatePicker
           id="date"
           v-model="selectedDate"
@@ -171,7 +176,7 @@ function handleCancel() {
       </div>
 
       <div class="field">
-        <label for="time">Tidspunkt *</label>
+        <label for="time">{{ t('observations.fields.time') }} *</label>
         <DatePicker
           id="time"
           v-model="selectedTime"
@@ -183,21 +188,21 @@ function handleCancel() {
       </div>
 
       <div class="field">
-        <label for="location">Sted (valgfritt)</label>
+        <label for="location">{{ t('observations.fields.location') }} ({{ t('common.optional') }})</label>
         <Select
           id="location"
           v-model="formData.location_id"
           :options="locationStore.locations"
           optionLabel="name"
           optionValue="id"
-          placeholder="Velg sted..."
+          :placeholder="t('observations.placeholders.select_location')"
           showClear
           class="w-full"
         />
       </div>
 
       <div class="field">
-        <label for="notes">Notater</label>
+        <label for="notes">{{ t('observations.fields.notes') }}</label>
         <Textarea
           id="notes"
           v-model="formData.notes"
@@ -208,14 +213,14 @@ function handleCancel() {
 
       <div class="form-actions">
         <Button
-          label="Avbryt"
+          :label="t('common.cancel')"
           severity="secondary"
           text
           @click="handleCancel"
           type="button"
         />
         <Button
-          label="Lagre"
+          :label="t('common.save')"
           type="submit"
           :loading="store.loading"
         />

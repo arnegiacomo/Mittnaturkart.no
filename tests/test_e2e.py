@@ -65,7 +65,7 @@ def test_create_observation(page):
 
     # Wait for success toast
     page.wait_for_selector(".p-toast", timeout=5000)
-    expect(page.locator(".p-toast")).to_contain_text("Opprettet")
+    expect(page.locator(".p-toast")).to_contain_text("Observasjonen ble opprettet")
     print("✓ Observation created successfully")
 
     # Verify observation appears in table with time
@@ -95,7 +95,7 @@ def test_edit_observation(page):
 
     # Wait for success toast
     page.wait_for_selector(".p-toast", timeout=5000)
-    expect(page.locator(".p-toast")).to_contain_text("Oppdatert")
+    expect(page.locator(".p-toast")).to_contain_text("Observasjonen ble oppdatert")
     print("✓ Observation updated successfully")
 
 def test_delete_observation(page):
@@ -117,7 +117,7 @@ def test_delete_observation(page):
 
     # Wait for success toast
     page.wait_for_selector(".p-toast", timeout=5000)
-    expect(page.locator(".p-toast")).to_contain_text("Slettet")
+    expect(page.locator(".p-toast")).to_contain_text("Observasjonen ble slettet")
     print("✓ Observation deleted successfully")
 
 def test_switch_to_locations_tab(page):
@@ -158,7 +158,7 @@ def test_create_location(page):
 
     # Wait for success toast
     page.wait_for_selector(".p-toast", timeout=5000)
-    expect(page.locator(".p-toast")).to_contain_text("Opprettet")
+    expect(page.locator(".p-toast")).to_contain_text("Stedet ble opprettet")
     print("✓ Location created successfully")
 
     # Verify location appears in table (use first match as both tables may have the same data)
@@ -189,7 +189,7 @@ def test_edit_location(page):
 
     # Wait for success toast
     page.wait_for_selector(".p-toast", timeout=5000)
-    expect(page.locator(".p-toast")).to_contain_text("Oppdatert")
+    expect(page.locator(".p-toast")).to_contain_text("Stedet ble oppdatert")
     print("✓ Location updated successfully")
 
 def test_create_observation_with_location(page):
@@ -242,7 +242,7 @@ def test_create_observation_with_location(page):
     # Submit
     page.get_by_role("button", name="Lagre").click()
     page.wait_for_selector(".p-toast", timeout=5000)
-    expect(page.locator(".p-toast")).to_contain_text("Opprettet")
+    expect(page.locator(".p-toast")).to_contain_text("Observasjonen ble opprettet")
     print("✓ Observation with location created successfully")
 
 def test_delete_location(page):
@@ -266,7 +266,7 @@ def test_delete_location(page):
 
     # Wait for success toast
     page.wait_for_selector(".p-toast", timeout=5000)
-    expect(page.locator(".p-toast")).to_contain_text("Slettet")
+    expect(page.locator(".p-toast")).to_contain_text("Stedet ble slettet")
     print("✓ Location deleted successfully")
 
 def run_tests():

@@ -5,6 +5,7 @@ import Lara from '@primevue/themes/lara'
 import ToastService from 'primevue/toastservice'
 import ConfirmationService from 'primevue/confirmationservice'
 import App from './App.vue'
+import { primeVueNbNO } from './i18n/primevue-nb-NO'
 
 import 'primeicons/primeicons.css'
 
@@ -18,7 +19,8 @@ app.use(PrimeVue, {
     options: {
       darkModeSelector: false
     }
-  }
+  },
+  locale: primeVueNbNO
 })
 app.use(ToastService)
 app.use(ConfirmationService)
