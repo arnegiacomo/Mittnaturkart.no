@@ -49,7 +49,12 @@ def test_create_observation(page):
     page.wait_for_timeout(500)  # Wait for dropdown to open
     page.locator('[role="option"]').first.click()  # Select first option (Fugl)
 
-    # Skip coordinates for now - they have default values
+    # Set time to 14:30 using PrimeVue DatePicker
+    time_input = page.locator('#time').locator('input').first
+    time_input.click()
+    page.wait_for_timeout(500)
+    time_input.fill("14:30")
+    print("✓ Time set to 14:30")
 
     # Fill notes
     page.locator('textarea[id="notes"]').fill("E2E test observation")
@@ -63,9 +68,10 @@ def test_create_observation(page):
     expect(page.locator(".p-toast")).to_contain_text("Opprettet")
     print("✓ Observation created successfully")
 
-    # Verify observation appears in table
+    # Verify observation appears in table with time
     expect(page.get_by_text("Granskog fugl")).to_be_visible()
-    print("✓ Observation visible in table")
+    expect(page.get_by_text("14:30")).to_be_visible()
+    print("✓ Observation visible in table with correct time")
 
 def test_edit_observation(page):
     print("\n--- Testing Edit Observation ---")
@@ -114,6 +120,155 @@ def test_delete_observation(page):
     expect(page.locator(".p-toast")).to_contain_text("Slettet")
     print("✓ Observation deleted successfully")
 
+def test_switch_to_locations_tab(page):
+    print("\n--- Testing Switch to Locations Tab ---")
+    page.goto(BASE_URL)
+
+    # Click on "Steder" tab
+    page.get_by_role("tab", name="Steder").click()
+    page.wait_for_timeout(500)
+
+    # Verify "Nytt sted" button is visible
+    expect(page.get_by_role("button", name="Nytt sted")).to_be_visible()
+    print("✓ Switched to Steder tab")
+
+def test_create_location(page):
+    print("\n--- Testing Create Location ---")
+    page.goto(BASE_URL)
+
+    # Switch to Steder tab
+    page.get_by_role("tab", name="Steder").click()
+    page.wait_for_timeout(500)
+
+    # Click "Nytt sted" button
+    page.get_by_role("button", name="Nytt sted").click()
+
+    # Wait for dialog to appear
+    page.wait_for_selector('[role="dialog"]', timeout=5000)
+    print("✓ Dialog opened")
+
+    # Fill in the form
+    page.locator('input[id="name"]').fill("E2E Test Location")
+    page.locator('input[id="address"]').fill("Test Address 123")
+    page.locator('textarea[id="description"]').fill("E2E test location description")
+    print("✓ Form filled")
+
+    # Submit the form
+    page.get_by_role("button", name="Lagre").click()
+
+    # Wait for success toast
+    page.wait_for_selector(".p-toast", timeout=5000)
+    expect(page.locator(".p-toast")).to_contain_text("Opprettet")
+    print("✓ Location created successfully")
+
+    # Verify location appears in table (use first match as both tables may have the same data)
+    expect(page.get_by_role("cell", name="E2E Test Location", exact=True).first).to_be_visible()
+    print("✓ Location visible in table")
+
+def test_edit_location(page):
+    print("\n--- Testing Edit Location ---")
+    page.goto(BASE_URL)
+
+    # Switch to Steder tab
+    page.get_by_role("tab", name="Steder").click()
+    page.wait_for_timeout(500)
+
+    # Find the row containing our location, then click the edit button within that row
+    row = page.get_by_role("row").filter(has_text="E2E Test Location").first
+    row.locator('button:has(.pi-pencil)').click()
+
+    # Wait for dialog
+    page.wait_for_selector('[role="dialog"]', timeout=5000)
+    print("✓ Edit dialog opened")
+
+    # Update description field
+    page.locator('textarea[id="description"]').fill("Updated E2E test location")
+
+    # Save
+    page.get_by_role("button", name="Lagre").click()
+
+    # Wait for success toast
+    page.wait_for_selector(".p-toast", timeout=5000)
+    expect(page.locator(".p-toast")).to_contain_text("Oppdatert")
+    print("✓ Location updated successfully")
+
+def test_create_observation_with_location(page):
+    print("\n--- Testing Create Observation with Location ---")
+    page.goto(BASE_URL)
+
+    # First ensure there's a location
+    page.get_by_role("tab", name="Steder").click()
+    page.wait_for_timeout(500)
+    location_exists = page.get_by_role("cell", name="E2E Test Location", exact=True).first.is_visible()
+
+    if not location_exists:
+        page.get_by_role("button", name="Nytt sted").click()
+        page.wait_for_selector('[role="dialog"]', timeout=5000)
+        page.locator('input[id="name"]').fill("E2E Test Location")
+        page.get_by_role("button", name="Lagre").click()
+        page.wait_for_selector(".p-toast", timeout=5000)
+
+    # Switch back to Observasjoner tab
+    page.get_by_role("tab", name="Observasjoner").click()
+    page.wait_for_timeout(500)
+    print("✓ Switched to Observasjoner tab")
+
+    # Click "Ny observasjon" button
+    page.get_by_role("button", name="Ny observasjon").click()
+    page.wait_for_selector('[role="dialog"]', timeout=5000)
+
+    # Fill in the form
+    page.locator('input[id="species"]').fill("Ørn med sted")
+
+    # Select category
+    page.locator('#category').click()
+    page.wait_for_timeout(500)
+    page.locator('[role="option"]').first.click()
+
+    # Set time to 09:15 using PrimeVue DatePicker
+    time_input = page.locator('#time').locator('input').first
+    time_input.click()
+    page.wait_for_timeout(500)
+    time_input.fill("09:15")
+
+    # Select location from dropdown
+    page.locator('#location').click()
+    page.wait_for_timeout(500)
+    page.locator('[role="option"]').filter(has_text="E2E Test Location").first.click()
+    print("✓ Selected location from dropdown")
+
+    page.locator('textarea[id="notes"]').fill("Observation with location")
+
+    # Submit
+    page.get_by_role("button", name="Lagre").click()
+    page.wait_for_selector(".p-toast", timeout=5000)
+    expect(page.locator(".p-toast")).to_contain_text("Opprettet")
+    print("✓ Observation with location created successfully")
+
+def test_delete_location(page):
+    print("\n--- Testing Delete Location ---")
+    page.goto(BASE_URL)
+
+    # Switch to Steder tab
+    page.get_by_role("tab", name="Steder").click()
+    page.wait_for_timeout(500)
+
+    # Find the row containing our location, then click the delete button within that row
+    row = page.get_by_role("row").filter(has_text="E2E Test Location").first
+    row.locator('button:has(.pi-trash)').click()
+
+    # Wait for confirmation dialog
+    page.wait_for_selector(".p-confirmdialog", timeout=5000)
+    print("✓ Confirmation dialog opened")
+
+    # Confirm deletion
+    page.locator('.p-confirmdialog').get_by_role("button", name="Ja").click()
+
+    # Wait for success toast
+    page.wait_for_selector(".p-toast", timeout=5000)
+    expect(page.locator(".p-toast")).to_contain_text("Slettet")
+    print("✓ Location deleted successfully")
+
 def run_tests():
     print("=" * 50)
     print("Starting Frontend E2E Tests")
@@ -133,6 +288,14 @@ def run_tests():
             test_create_observation(page)
             test_edit_observation(page)
             test_delete_observation(page)
+
+            test_switch_to_locations_tab(page)
+            test_create_location(page)
+            test_edit_location(page)
+
+            test_create_observation_with_location(page)
+
+            test_delete_location(page)
 
             print("\n" + "=" * 50)
             print("✓ All E2E tests passed!")

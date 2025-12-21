@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import Button from 'primevue/button'
-import Toast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
-import ConfirmDialog from 'primevue/confirmdialog'
 import { useConfirm } from 'primevue/useconfirm'
+import EntityTable from './EntityTable.vue'
 import ObservationForm from './ObservationForm.vue'
 import { useObservationStore } from '../stores/observations'
+import { useLocationStore } from '../stores/locations'
 import type { Observation } from '../types'
-import type { DataTablePageEvent } from 'primevue/datatable'
+import type { TableColumn } from './EntityTable.vue'
+import type { DataTablePageEvent, DataTableSortEvent } from 'primevue/datatable'
 
 const store = useObservationStore()
+const locationStore = useLocationStore()
 const toast = useToast()
 const confirm = useConfirm()
 
@@ -21,6 +20,27 @@ const editingObservation = ref<Observation | null>(null)
 const rows = ref(10)
 const first = ref(0)
 const initialLoading = ref(true)
+const sortBy = ref('id')
+const sortOrder = ref('desc')
+
+const columns: TableColumn<Observation>[] = [
+  { field: 'species', header: 'Art', sortable: true },
+  { field: 'category', header: 'Kategori', sortable: true },
+  {
+    field: 'date',
+    header: 'Dato og tid',
+    sortable: true,
+    formatter: (data: Observation) => {
+      const date = new Date(data.date)
+      return `${date.toLocaleDateString('no-NO')} ${date.toLocaleTimeString('no-NO', { hour: '2-digit', minute: '2-digit' })}`
+    }
+  },
+  {
+    field: 'notes',
+    header: 'Notater',
+    formatter: (data: Observation) => data.notes || '-'
+  }
+]
 
 onMounted(async () => {
   await loadObservations()
@@ -28,12 +48,18 @@ onMounted(async () => {
 })
 
 async function loadObservations() {
-  await store.fetchObservations(first.value, rows.value)
+  await store.fetchObservations(first.value, rows.value, sortBy.value, sortOrder.value)
 }
 
 function onPage(event: DataTablePageEvent) {
   first.value = event.first
   rows.value = event.rows
+  loadObservations()
+}
+
+function onSort(event: DataTableSortEvent) {
+  sortBy.value = event.sortField as string
+  sortOrder.value = event.sortOrder === 1 ? 'asc' : 'desc'
   loadObservations()
 }
 
@@ -58,6 +84,8 @@ function handleDelete(observation: Observation) {
       try {
         await store.deleteObservation(observation.id!)
         await loadObservations()
+        // Refresh locations to update observation counts
+        await locationStore.fetchLocations(0, 100)
         toast.add({
           severity: 'success',
           summary: 'Slettet',
@@ -75,87 +103,25 @@ function handleDelete(observation: Observation) {
     }
   })
 }
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('no-NO')
-}
-
-function formatCoordinates(lat: number, lon: number) {
-  return `${lat.toFixed(4)}, ${lon.toFixed(4)}`
-}
 </script>
 
 <template>
   <div>
-    <Toast />
-    <ConfirmDialog />
-
-    <div class="toolbar">
-      <Button
-        label="Ny observasjon"
-        icon="pi pi-plus"
-        @click="handleCreate"
-        severity="success"
-      />
-    </div>
-
-    <DataTable
-      :value="store.observations"
+    <EntityTable
+      :data="store.observations"
+      :columns="columns"
       :loading="initialLoading"
-      stripedRows
-      lazy
-      paginator
+      :total-records="store.totalRecords"
       :rows="rows"
-      :totalRecords="store.totalRecords"
       :first="first"
+      create-button-label="Ny observasjon"
+      empty-message="Ingen observasjoner funnet"
+      @create="handleCreate"
+      @edit="handleEdit"
+      @delete="handleDelete"
       @page="onPage"
-      tableStyle="min-width: 50rem"
-      class="observation-table"
-    >
-      <template #empty>
-        <div class="empty-state">
-          <i class="pi pi-inbox" style="font-size: 3rem; color: #94a3b8;"></i>
-          <p>Ingen observasjoner funnet</p>
-        </div>
-      </template>
-
-      <Column field="species" header="Art" sortable />
-      <Column field="category" header="Kategori" sortable />
-      <Column field="date" header="Dato" sortable>
-        <template #body="{ data }">
-          {{ formatDate(data.date) }}
-        </template>
-      </Column>
-      <Column header="Posisjon">
-        <template #body="{ data }">
-          {{ formatCoordinates(data.latitude, data.longitude) }}
-        </template>
-      </Column>
-      <Column field="notes" header="Notater">
-        <template #body="{ data }">
-          {{ data.notes || '-' }}
-        </template>
-      </Column>
-      <Column header="Handlinger">
-        <template #body="{ data }">
-          <div class="actions">
-            <Button
-              icon="pi pi-pencil"
-              size="small"
-              text
-              @click="handleEdit(data)"
-            />
-            <Button
-              icon="pi pi-trash"
-              size="small"
-              severity="danger"
-              text
-              @click="handleDelete(data)"
-            />
-          </div>
-        </template>
-      </Column>
-    </DataTable>
+      @sort="onSort"
+    />
 
     <ObservationForm
       v-model:visible="showDialog"
@@ -164,35 +130,3 @@ function formatCoordinates(lat: number, lon: number) {
     />
   </div>
 </template>
-
-<style scoped>
-.toolbar {
-  margin-bottom: 1.5rem;
-}
-
-.observation-table {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.observation-table :deep(tbody) {
-  transition: opacity 0.2s ease-in-out;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 3rem;
-  color: #64748b;
-}
-
-.empty-state p {
-  margin-top: 1rem;
-  font-size: 1.1rem;
-}
-
-.actions {
-  display: flex;
-  gap: 0.5rem;
-}
-</style>

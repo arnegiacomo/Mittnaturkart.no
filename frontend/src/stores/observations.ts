@@ -9,10 +9,10 @@ export const useObservationStore = defineStore('observations', () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  async function fetchObservations(skip: number = 0, limit: number = 10) {
+  async function fetchObservations(skip: number = 0, limit: number = 10, sortBy?: string, sortOrder?: string) {
     error.value = null
     try {
-      const response = await observationApi.getAll(skip, limit)
+      const response = await observationApi.getAll(skip, limit, sortBy, sortOrder)
       observations.value = response.data.data
       totalRecords.value = response.data.total
     } catch (e) {

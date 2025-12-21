@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
-import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import { useToast } from 'primevue/usetoast'
 import { useObservationStore } from '../stores/observations'
+import { useLocationStore } from '../stores/locations'
 import type { Observation } from '../types'
 
 const props = defineProps<{
@@ -22,6 +22,7 @@ const emit = defineEmits<{
 }>()
 
 const store = useObservationStore()
+const locationStore = useLocationStore()
 const toast = useToast()
 
 const categories = [
@@ -33,43 +34,61 @@ const categories = [
   'Annet'
 ]
 
+onMounted(async () => {
+  // Load all locations for the dropdown
+  await locationStore.fetchLocations(0, 100)
+})
+
 const formData = ref<Observation>({
   species: '',
-  date: new Date().toISOString().split('T')[0],
-  latitude: 59.9139,
-  longitude: 10.7522,
+  date: new Date().toISOString(),
+  location_id: null,
   notes: '',
   category: 'Fugl'
 })
 
 const selectedDate = ref<Date>(new Date())
+const selectedTime = ref<Date>(new Date())
 
 watch(() => props.observation, (newVal) => {
   if (newVal) {
     formData.value = { ...newVal }
-    selectedDate.value = new Date(newVal.date)
+    const date = new Date(newVal.date)
+    selectedDate.value = date
+    selectedTime.value = date
   } else {
     resetForm()
   }
 }, { immediate: true })
 
 function resetForm() {
+  const now = new Date()
   formData.value = {
     species: '',
-    date: new Date().toISOString().split('T')[0],
-    latitude: 59.9139,
-    longitude: 10.7522,
+    date: now.toISOString(),
+    location_id: null,
     notes: '',
     category: 'Fugl'
   }
-  selectedDate.value = new Date()
+  selectedDate.value = now
+  selectedTime.value = now
 }
 
 async function handleSubmit() {
   try {
+    const combinedDateTime = new Date(
+      selectedDate.value.getFullYear(),
+      selectedDate.value.getMonth(),
+      selectedDate.value.getDate(),
+      selectedTime.value.getHours(),
+      selectedTime.value.getMinutes(),
+      0,
+      0
+    )
+
     const submitData = {
       ...formData.value,
-      date: selectedDate.value.toISOString().split('T')[0]
+      date: combinedDateTime.toISOString()
     }
 
     if (props.observation?.id) {
@@ -89,6 +108,8 @@ async function handleSubmit() {
         life: 3000
       })
     }
+    // Refresh locations to update observation counts
+    await locationStore.fetchLocations(0, 100)
     emit('saved')
     emit('update:visible', false)
     resetForm()
@@ -149,30 +170,30 @@ function handleCancel() {
         />
       </div>
 
-      <div class="field-group">
-        <div class="field">
-          <label for="latitude">Breddegrad *</label>
-          <InputNumber
-            id="latitude"
-            v-model="formData.latitude"
-            :minFractionDigits="4"
-            :maxFractionDigits="6"
-            required
-            class="w-full"
-          />
-        </div>
+      <div class="field">
+        <label for="time">Tidspunkt *</label>
+        <DatePicker
+          id="time"
+          v-model="selectedTime"
+          timeOnly
+          hourFormat="24"
+          required
+          class="w-full"
+        />
+      </div>
 
-        <div class="field">
-          <label for="longitude">Lengdegrad *</label>
-          <InputNumber
-            id="longitude"
-            v-model="formData.longitude"
-            :minFractionDigits="4"
-            :maxFractionDigits="6"
-            required
-            class="w-full"
-          />
-        </div>
+      <div class="field">
+        <label for="location">Sted (valgfritt)</label>
+        <Select
+          id="location"
+          v-model="formData.location_id"
+          :options="locationStore.locations"
+          optionLabel="name"
+          optionValue="id"
+          placeholder="Velg sted..."
+          showClear
+          class="w-full"
+        />
       </div>
 
       <div class="field">
@@ -219,12 +240,6 @@ function handleCancel() {
 .field label {
   font-weight: 500;
   color: #374151;
-}
-
-.field-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
 }
 
 .w-full {
