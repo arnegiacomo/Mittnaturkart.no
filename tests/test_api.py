@@ -49,13 +49,68 @@ def test_health_check():
     assert response.json()["status"] == "ok"
     print("✓ Health check passed")
 
-def test_create_observation():
+def test_create_location():
+    print("\n--- Testing Create Location ---")
+    location = {
+        "name": "Test Location",
+        "latitude": 59.9139,
+        "longitude": 10.7522,
+        "description": "A test location in Oslo",
+        "address": "Oslo, Norway"
+    }
+    response = requests.post(f"{API_URL}/api/v1/locations", json=location)
+    assert response.status_code == 201, f"Create failed: {response.status_code} - {response.text}"
+    data = response.json()
+    assert data["name"] == location["name"]
+    assert data["latitude"] == location["latitude"]
+    assert data["longitude"] == location["longitude"]
+    assert "id" in data
+    print(f"✓ Created location with ID: {data['id']}")
+    return data["id"]
+
+def test_get_all_locations():
+    print("\n--- Testing Get All Locations ---")
+    response = requests.get(f"{API_URL}/api/v1/locations")
+    assert response.status_code == 200, f"Get all failed: {response.status_code}"
+    data = response.json()
+    assert isinstance(data, dict), "Response should be a dict with 'data' and 'total' keys"
+    assert "data" in data, "Response should have 'data' key"
+    assert "total" in data, "Response should have 'total' key"
+    assert isinstance(data["data"], list)
+    assert len(data["data"]) > 0
+    assert data["total"] > 0
+    # Verify observation_count field exists
+    for location in data["data"]:
+        assert "observation_count" in location, "Each location should have observation_count"
+    print(f"✓ Retrieved {len(data['data'])} location(s) out of {data['total']} total")
+
+def test_get_location(location_id):
+    print("\n--- Testing Get Single Location ---")
+    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}")
+    assert response.status_code == 200, f"Get single failed: {response.status_code}"
+    data = response.json()
+    assert data["id"] == location_id
+    assert "observation_count" in data, "Location should have observation_count"
+    print(f"✓ Retrieved location ID: {location_id}")
+    return data
+
+def test_update_location(location_id):
+    print("\n--- Testing Update Location ---")
+    update_data = {
+        "description": "Updated test location"
+    }
+    response = requests.put(f"{API_URL}/api/v1/locations/{location_id}", json=update_data)
+    assert response.status_code == 200, f"Update failed: {response.status_code}"
+    data = response.json()
+    assert data["description"] == update_data["description"]
+    print(f"✓ Updated location ID: {location_id}")
+
+def test_create_observation(location_id):
     print("\n--- Testing Create Observation ---")
     observation = {
         "species": "Rødstrupe",
         "date": datetime.now().isoformat(),
-        "latitude": 59.9139,
-        "longitude": 10.7522,
+        "location_id": location_id,
         "notes": "Test observation",
         "category": "Fugl"
     }
@@ -64,6 +119,7 @@ def test_create_observation():
     data = response.json()
     assert data["species"] == observation["species"]
     assert data["category"] == observation["category"]
+    assert data["location_id"] == location_id
     assert "id" in data
     print(f"✓ Created observation with ID: {data['id']}")
     return data["id"]
@@ -112,6 +168,16 @@ def test_delete_observation(observation_id):
     assert response.status_code == 404, "Observation should not exist after deletion"
     print(f"✓ Deleted observation ID: {observation_id}")
 
+def test_delete_location(location_id):
+    print("\n--- Testing Delete Location ---")
+    response = requests.delete(f"{API_URL}/api/v1/locations/{location_id}")
+    assert response.status_code == 204, f"Delete failed: {response.status_code}"
+
+    # Verify deletion
+    response = requests.get(f"{API_URL}/api/v1/locations/{location_id}")
+    assert response.status_code == 404, "Location should not exist after deletion"
+    print(f"✓ Deleted location ID: {location_id}")
+
 def run_tests():
     print("=" * 50)
     print("Starting API Tests (via Nginx)")
@@ -123,11 +189,22 @@ def run_tests():
     try:
         test_nginx_proxy()
         test_health_check()
-        observation_id = test_create_observation()
+
+        # Test locations
+        location_id = test_create_location()
+        test_get_all_locations()
+        test_get_location(location_id)
+        test_update_location(location_id)
+
+        # Test observations with location
+        observation_id = test_create_observation(location_id)
         test_get_all_observations()
         test_get_observation(observation_id)
         test_update_observation(observation_id)
         test_delete_observation(observation_id)
+
+        # Delete location after observations are deleted
+        test_delete_location(location_id)
 
         print("\n" + "=" * 50)
         print("✓ All tests passed!")

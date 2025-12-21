@@ -79,10 +79,6 @@ function handleDelete(observation: Observation) {
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleDateString('no-NO')
 }
-
-function formatCoordinates(lat: number, lon: number) {
-  return `${lat.toFixed(4)}, ${lon.toFixed(4)}`
-}
 </script>
 
 <template>
@@ -124,11 +120,6 @@ function formatCoordinates(lat: number, lon: number) {
       <Column field="date" header="Dato" sortable>
         <template #body="{ data }">
           {{ formatDate(data.date) }}
-        </template>
-      </Column>
-      <Column header="Posisjon">
-        <template #body="{ data }">
-          {{ formatCoordinates(data.latitude, data.longitude) }}
         </template>
       </Column>
       <Column field="notes" header="Notater">

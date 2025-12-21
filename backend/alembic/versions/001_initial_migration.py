@@ -3,6 +3,7 @@
 Revision ID: 001
 Revises:
 Create Date: 2025-12-19 12:00:00.000000
+App Version: 0.1.0
 
 """
 from alembic import op

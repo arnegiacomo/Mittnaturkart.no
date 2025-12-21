@@ -2,8 +2,7 @@ export interface Observation {
   id?: number
   species: string
   date: string
-  latitude: number
-  longitude: number
+  location_id?: number | null
   notes?: string
   category: string
   created_at?: string

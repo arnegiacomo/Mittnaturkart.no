@@ -49,7 +49,7 @@ def test_create_observation(page):
     page.wait_for_timeout(500)  # Wait for dropdown to open
     page.locator('[role="option"]').first.click()  # Select first option (Fugl)
 
-    # Skip coordinates for now - they have default values
+    # No location fields - observations can be created without a location
 
     # Fill notes
     page.locator('textarea[id="notes"]').fill("E2E test observation")

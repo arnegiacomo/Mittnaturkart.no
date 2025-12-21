@@ -2,7 +2,6 @@
 import { ref, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
-import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
@@ -36,8 +35,7 @@ const categories = [
 const formData = ref<Observation>({
   species: '',
   date: new Date().toISOString().split('T')[0],
-  latitude: 59.9139,
-  longitude: 10.7522,
+  location_id: null,
   notes: '',
   category: 'Fugl'
 })
@@ -57,8 +55,7 @@ function resetForm() {
   formData.value = {
     species: '',
     date: new Date().toISOString().split('T')[0],
-    latitude: 59.9139,
-    longitude: 10.7522,
+    location_id: null,
     notes: '',
     category: 'Fugl'
   }
@@ -149,32 +146,6 @@ function handleCancel() {
         />
       </div>
 
-      <div class="field-group">
-        <div class="field">
-          <label for="latitude">Breddegrad *</label>
-          <InputNumber
-            id="latitude"
-            v-model="formData.latitude"
-            :minFractionDigits="4"
-            :maxFractionDigits="6"
-            required
-            class="w-full"
-          />
-        </div>
-
-        <div class="field">
-          <label for="longitude">Lengdegrad *</label>
-          <InputNumber
-            id="longitude"
-            v-model="formData.longitude"
-            :minFractionDigits="4"
-            :maxFractionDigits="6"
-            required
-            class="w-full"
-          />
-        </div>
-      </div>
-
       <div class="field">
         <label for="notes">Notater</label>
         <Textarea
@@ -219,12 +190,6 @@ function handleCancel() {
 .field label {
   font-weight: 500;
   color: #374151;
-}
-
-.field-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
 }
 
 .w-full {
