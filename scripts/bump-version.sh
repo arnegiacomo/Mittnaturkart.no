@@ -45,10 +45,10 @@ if [ -n "$1" ]; then
     echo "Commit message: $COMMIT_MSG"
     echo "Bump level: $BUMP_LEVEL"
 else
-    BASE_REF="${GITHUB_BASE_REF:-main}"
-    echo "Analyzing commits since $BASE_REF..."
+    DEFAULT_BASE_REF="${GITHUB_BASE_REF:-main}"
+    echo "Analyzing commits since $DEFAULT_BASE_REF..."
 
-    COMMITS=$(git log "$BASE_REF"..HEAD --pretty=%B --reverse 2>/dev/null || git log -1 --pretty=%B)
+    COMMITS=$(git log "$DEFAULT_BASE_REF"..HEAD --pretty=%B --reverse 2>/dev/null || git log -1 --pretty=%B)
 
     if [ -z "$COMMITS" ]; then
         echo "No commits found, using latest commit"
