@@ -1,6 +1,12 @@
 {
   "realm": "${KEYCLOAK_REALM}",
   "enabled": true,
+  "loginTheme": "keycloak.v2",
+  "accountTheme": "keycloak.v2",
+  "emailTheme": "keycloak.v2",
+  "internationalizationEnabled": true,
+  "supportedLocales": ["no"],
+  "defaultLocale": "no",
   "sslRequired": "none",
   "registrationAllowed": true,
   "resetPasswordAllowed": true,
