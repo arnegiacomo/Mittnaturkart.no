@@ -49,6 +49,6 @@ app.include_router(api_v1_router)
 def read_root():
     return {"message": "Welcome to Mittnaturkart API", "version": VERSION}
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():
     return {"status": "ok"}
