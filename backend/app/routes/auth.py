@@ -47,17 +47,20 @@ async def auth_callback(
     keycloak_access_token = keycloak_tokens["access_token"]
 
     user_info = await get_user_info(keycloak_access_token)
+    logger.info(f"User info from Keycloak: sub={user_info['sub']}, email={user_info.get('email')}, name={user_info.get('name')}")
 
     keycloak_id = user_info["sub"]
     email = user_info.get("email")
     name = user_info.get("name", email)
 
     if not email:
+        logger.error(f"Email not provided by Keycloak for sub={keycloak_id}")
         raise HTTPException(status_code=400, detail="Email not provided by identity provider")
 
     user = db.query(UserModel).filter(UserModel.keycloak_id == keycloak_id).first()
 
     if user:
+        logger.info(f"Existing user login: id={user.id}, email={email}, keycloak_id={keycloak_id}")
         user.email = email
         user.name = name
         db.commit()
@@ -71,10 +74,12 @@ async def auth_callback(
         db.add(user)
         db.commit()
         db.refresh(user)
+        logger.info(f"New user created: id={user.id}, email={email}, keycloak_id={keycloak_id}")
 
     access_token = create_access_token(
         data={"sub": str(user.id), "email": user.email}
     )
+    logger.info(f"JWT token issued for user: id={user.id}, email={user.email}")
 
     expires_in_seconds = settings.access_token_expire_days * 24 * 60 * 60
 
@@ -96,4 +101,5 @@ def get_logout_url():
 async def get_current_user_info(
     current_user: UserModel = Depends(get_current_user)
 ):
+    logger.info(f"User profile accessed: id={current_user.id}, email={current_user.email}")
     return current_user
