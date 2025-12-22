@@ -5,6 +5,7 @@ export interface TableColumn<T> {
   sortable?: boolean
   formatter?: (data: T) => string | number
   component?: (data: T) => any
+  mobileHidden?: boolean
 }
 </script>
 
@@ -123,6 +124,7 @@ const onRowClick = (event: any) => {
         :field="String(column.field)"
         :header="column.header"
         :sortable="column.sortable"
+        :class="{ 'mobile-hidden': column.mobileHidden }"
       >
         <template v-if="column.formatter || column.component" #body="{ data }">
           <component v-if="column.component" :is="column.component(data)" />
@@ -182,5 +184,19 @@ const onRowClick = (event: any) => {
 .empty-state p {
   margin-top: 1rem;
   font-size: 1.1rem;
+}
+
+@media (max-width: 640px) {
+  .toolbar :deep(button) {
+    width: 100%;
+  }
+
+  .entity-table :deep(table) {
+    min-width: unset !important;
+  }
+
+  .entity-table :deep(.mobile-hidden) {
+    display: none;
+  }
 }
 </style>

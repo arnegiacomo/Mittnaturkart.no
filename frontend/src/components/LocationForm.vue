@@ -133,7 +133,7 @@ function handleClose() {
     :visible="visible"
     @update:visible="(val) => !val && handleClose()"
     :header="location ? t('locations.edit') : t('locations.new')"
-    :style="{ width: '500px' }"
+    class="location-dialog"
     modal
     dismissableMask
   >
@@ -250,5 +250,18 @@ function handleClose() {
   font-size: 0.875rem;
   margin-top: 0.25rem;
   display: block;
+}
+</style>
+
+<style>
+.location-dialog {
+  width: 500px;
+  max-width: calc(100% - 2rem);
+}
+
+@media (max-width: 640px) {
+  .location-dialog .field-group {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
