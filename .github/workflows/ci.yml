@@ -13,61 +13,57 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
 
-    if: "!startsWith(github.event.head_commit.message, 'chore:') && !startsWith(github.event.head_commit.message, 'Merge')"
+    if: "!startsWith(github.event.head_commit.message, 'chore:')"
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
-      - name: Check for frontend changes
-        id: frontend_changes
+      - name: Check for changes since last tag
+        id: changes
         run: |
-          if git diff --name-only HEAD~1 HEAD | grep -q '^frontend/'; then
-            echo "changed=true" >> $GITHUB_OUTPUT
+          LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous tag found, checking all files"
+            DIFF_BASE=""
           else
-            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "Checking changes since $LAST_TAG"
+            DIFF_BASE="$LAST_TAG"
           fi
 
-      - name: Check for backend changes
-        id: backend_changes
-        run: |
-          if git diff --name-only HEAD~1 HEAD | grep -q '^backend/'; then
-            echo "changed=true" >> $GITHUB_OUTPUT
+          if [ -z "$DIFF_BASE" ]; then
+            # No tag, assume everything changed
+            echo "frontend=true" >> $GITHUB_OUTPUT
+            echo "backend=true" >> $GITHUB_OUTPUT
           else
-            echo "changed=false" >> $GITHUB_OUTPUT
+            if git diff --name-only "$DIFF_BASE"..HEAD | grep -q '^frontend/'; then
+              echo "frontend=true" >> $GITHUB_OUTPUT
+            else
+              echo "frontend=false" >> $GITHUB_OUTPUT
+            fi
+
+            if git diff --name-only "$DIFF_BASE"..HEAD | grep -q '^backend/'; then
+              echo "backend=true" >> $GITHUB_OUTPUT
+            else
+              echo "backend=false" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Build frontend
-        if: steps.frontend_changes.outputs.changed == 'true'
+        if: steps.changes.outputs.frontend == 'true'
         run: |
           echo "Building frontend..."
-          export VERSION=$(grep '^version = ' backend/pyproject.toml 2>/dev/null | sed 's/version = "\(.*\)"/\1/' || echo "1.0.0")
           cd docker
-          BUILDKIT_INLINE_CACHE=1 docker compose build \
-            --build-arg BUILDKIT_INLINE_CACHE=1 \
-            frontend
+          docker compose build frontend
 
       - name: Build backend
-        if: steps.backend_changes.outputs.changed == 'true'
+        if: steps.changes.outputs.backend == 'true'
         run: |
           echo "Building backend..."
-          export VERSION=$(grep '^version = ' backend/pyproject.toml 2>/dev/null | sed 's/version = "\(.*\)"/\1/' || echo "1.0.0")
           cd docker
-          BUILDKIT_INLINE_CACHE=1 docker compose build \
-            --build-arg BUILDKIT_INLINE_CACHE=1 \
-            backend
+          docker compose build backend
 
       - name: Run tests
         run: ./test.sh
-
-      - name: Test Summary
-        if: always()
-        run: |
-          if [ $? -eq 0 ]; then
-            echo "✓ All tests passed"
-          else
-            echo "✗ Tests failed"
-            exit 1
-          fi

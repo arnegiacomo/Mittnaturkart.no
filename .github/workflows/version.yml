@@ -12,8 +12,6 @@ jobs:
     permissions:
       contents: write
 
-    if: "!startsWith(github.event.head_commit.message, 'chore:') && !startsWith(github.event.head_commit.message, 'Merge')"
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -54,7 +52,10 @@ jobs:
           git push origin "v$NEW_VERSION"
 
       - name: Summary
-        if: steps.check_changes.outputs.changed == 'true'
         run: |
-          echo "✓ Version bumped to ${{ steps.bump.outputs.new_version }}"
-          echo "✓ Tag v${{ steps.bump.outputs.new_version }} created"
+          if [ "${{ steps.check_changes.outputs.changed }}" == "true" ]; then
+            echo "✓ Version bumped to ${{ steps.bump.outputs.new_version }}"
+            echo "✓ Tag v${{ steps.bump.outputs.new_version }} created"
+          else
+            echo "No version bump needed"
+          fi
