@@ -1,4 +1,5 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
     postgres_user: str
@@ -43,8 +44,7 @@ class Settings(BaseSettings):
     def keycloak_logout_url(self) -> str:
         return f"{self.keycloak_public_url}/realms/{self.keycloak_realm}/protocol/openid-connect/logout"
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+
 
 settings = Settings()

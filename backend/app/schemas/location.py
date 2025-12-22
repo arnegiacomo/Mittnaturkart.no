@@ -1,4 +1,4 @@
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 from typing import Optional
 from datetime import datetime, timezone
 
@@ -37,8 +37,7 @@ class Location(LocationBase):
             return v.replace(tzinfo=timezone.utc)  # Assume UTC if naive
         return v
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LocationWithCount(Location):
