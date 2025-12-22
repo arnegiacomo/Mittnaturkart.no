@@ -5,12 +5,11 @@ from playwright.sync_api import sync_playwright, expect
 
 BASE_URL = "http://nginx"
 
-def inject_dummy_auth(page):
+def inject_dummy_auth(context):
     """Inject dummy auth token into localStorage for test mode"""
     print("Injecting dummy auth token...")
-    page.goto(BASE_URL)
     expiry = int(time.time() * 1000) + (7 * 24 * 60 * 60 * 1000)
-    page.evaluate(f"""
+    context.add_init_script(f"""
         localStorage.setItem('auth_token', 'dummy');
         localStorage.setItem('auth_token_expiry', '{expiry}');
     """)
@@ -21,7 +20,15 @@ def wait_for_app(page, max_retries=30):
     for i in range(max_retries):
         try:
             page.goto(BASE_URL, timeout=5000)
-            page.wait_for_selector("h1", timeout=3000)
+            page.wait_for_load_state("networkidle", timeout=3000)
+            # Wait for either spinner to disappear or header to appear
+            try:
+                page.wait_for_selector(".loading", state="attached", timeout=1000)
+                page.wait_for_selector(".loading", state="hidden", timeout=5000)
+            except:
+                pass
+            # Finally wait for header
+            page.wait_for_selector("h1", timeout=5000)
             print(f"✓ Application is ready after {i+1} attempts")
             return True
         except Exception:
@@ -301,7 +308,7 @@ def run_tests():
 
         try:
             # Inject auth token first, then wait for app
-            inject_dummy_auth(page)
+            inject_dummy_auth(context)
 
             if not wait_for_app(page):
                 return 1
