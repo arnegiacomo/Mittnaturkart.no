@@ -15,19 +15,25 @@ export VERSION=$(grep '^version = ' backend/pyproject.toml 2>/dev/null | sed 's/
 
 cd docker
 
-RUNNING=$(docker compose --env-file ../.env ps -q 2>/dev/null | wc -l | tr -d ' ')
+# Enable Cloudflare Tunnel if CLOUDFLARE_ENABLED=true in .env
+PROFILE_ARG=""
+if grep -q '^CLOUDFLARE_ENABLED=true' ../.env 2>/dev/null; then
+  PROFILE_ARG="--profile production"
+fi
+
+RUNNING=$(docker compose --env-file ../.env $PROFILE_ARG ps -q 2>/dev/null | wc -l | tr -d ' ')
 if [ "$RUNNING" -gt 0 ]; then
   echo "Stopping existing containers..."
-  docker compose --env-file ../.env down 2>/dev/null || true
+  docker compose --env-file ../.env $PROFILE_ARG down 2>/dev/null || true
   echo ""
 fi
 
-if ! docker compose --env-file ../.env up -d --build; then
+if ! docker compose --env-file ../.env $PROFILE_ARG up -d --build; then
     echo "Error: Failed to start containers"
     exit 1
 fi
 
-docker compose --env-file ../.env ps
+docker compose --env-file ../.env $PROFILE_ARG ps
 
 echo ""
 echo "=================================="

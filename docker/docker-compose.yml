@@ -131,5 +131,23 @@ services:
         reservations:
           memory: 64M
 
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: mittnaturkart-cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      - nginx
+    profiles:
+      - production
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
 volumes:
   postgres-data:

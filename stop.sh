@@ -14,7 +14,12 @@ export VERSION=$(grep '^version = ' backend/pyproject.toml 2>/dev/null | sed 's/
 
 cd docker
 
-RUNNING=$(docker compose --env-file ../.env ps -q 2>/dev/null | wc -l | tr -d ' ')
+PROFILE_ARG=""
+if grep -q '^CLOUDFLARE_ENABLED=true' ../.env 2>/dev/null; then
+  PROFILE_ARG="--profile production"
+fi
+
+RUNNING=$(docker compose --env-file ../.env $PROFILE_ARG ps -q 2>/dev/null | wc -l | tr -d ' ')
 if [ "$RUNNING" -eq 0 ]; then
     echo "No containers running"
     exit 0
@@ -23,7 +28,7 @@ fi
 echo "Stopping Mittnaturkart v${VERSION}..."
 echo ""
 
-if docker compose --env-file ../.env down 2>/dev/null; then
+if docker compose --env-file ../.env $PROFILE_ARG down 2>/dev/null; then
     echo ""
     echo "=================================="
     echo "✓ Application stopped successfully"

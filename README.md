@@ -82,6 +82,10 @@ KEYCLOAK_CLIENT_ID=mittnaturkart-client
 KEYCLOAK_CLIENT_SECRET=change_me_in_production
 ```
 
+## Produksjon
+
+Sett `CLOUDFLARE_ENABLED=true` og `CLOUDFLARE_TUNNEL_TOKEN` i `.env` for å aktivere Cloudflare Tunnel med automatisk HTTPS.
+
 ## Fremtidige planer
 
 - Dele lokasjoner med andre brukere

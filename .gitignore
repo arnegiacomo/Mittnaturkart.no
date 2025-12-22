@@ -29,6 +29,7 @@ ENV/
 .env
 .env.local
 .env.*.local
+.env.prod.template
 .envrc
 
 # Node / Vue
