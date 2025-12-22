@@ -9,7 +9,7 @@
   "defaultLocale": "no",
   "sslRequired": "none",
   "registrationAllowed": true,
-  "resetPasswordAllowed": true,
+  "resetPasswordAllowed": false,
   "editUsernameAllowed": false,
   "bruteForceProtected": true,
   "permanentLockout": false,
