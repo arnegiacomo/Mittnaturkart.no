@@ -66,7 +66,7 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL}
       KC_HOSTNAME_STRICT: false
-      KC_HTTP_RELATIVE_PATH: /keycloak
+      KC_HTTP_RELATIVE_PATH: /authentication
       KC_PROXY_HEADERS: xforwarded
       KC_HTTP_ENABLED: true
     expose:
