@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict, field_validator
 from typing import Optional
 from datetime import datetime, timezone
+from uuid import UUID
 
 
 class LocationBase(BaseModel):
@@ -25,6 +26,7 @@ class LocationUpdate(BaseModel):
 
 class Location(LocationBase):
     id: int
+    user_id: UUID
     created_at: datetime
     updated_at: datetime
 

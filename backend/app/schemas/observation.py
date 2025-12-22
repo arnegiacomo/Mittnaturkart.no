@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict, field_validator
 from datetime import datetime, timezone
 from typing import Optional, List, Generic, TypeVar, TYPE_CHECKING
+from uuid import UUID
 
 if TYPE_CHECKING:
     from .location import Location
@@ -33,6 +34,7 @@ class ObservationUpdate(BaseModel):
 
 class Observation(ObservationBase):
     id: int
+    user_id: UUID
     created_at: datetime
     updated_at: datetime
     location: Optional['Location'] = None

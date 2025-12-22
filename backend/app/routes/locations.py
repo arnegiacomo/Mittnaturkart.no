@@ -23,14 +23,14 @@ class SortOrder(str, Enum):
 
 @router.get("", response_model=PaginatedResponse[LocationWithCount])
 def get_locations(skip: int = 0, limit: int = 100, sort_by: LocationSortField = LocationSortField.id, sort_order: SortOrder = SortOrder.desc, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
-    total = db.query(LocationModel).count()
+    total = db.query(LocationModel).filter(LocationModel.user_id == current_user.id).count()
     sort_field = getattr(LocationModel, sort_by.value)
     order_func = sort_field.asc() if sort_order == SortOrder.asc else sort_field.desc()
 
     locations_query = db.query(
         LocationModel,
         func.count(ObservationModel.id).label('observation_count')
-    ).outerjoin(ObservationModel).group_by(LocationModel.id).order_by(order_func).offset(skip).limit(limit).all()
+    ).filter(LocationModel.user_id == current_user.id).outerjoin(ObservationModel).group_by(LocationModel.id).order_by(order_func).offset(skip).limit(limit).all()
 
     locations = []
     for location, count in locations_query:
@@ -41,6 +41,7 @@ def get_locations(skip: int = 0, limit: int = 100, sort_by: LocationSortField = 
             "longitude": location.longitude,
             "description": location.description,
             "address": location.address,
+            "user_id": location.user_id,
             "created_at": location.created_at,
             "updated_at": location.updated_at,
             "observation_count": count
@@ -51,7 +52,10 @@ def get_locations(skip: int = 0, limit: int = 100, sort_by: LocationSortField = 
 
 @router.get("/{location_id}", response_model=LocationWithCount)
 def get_location(location_id: int, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
-    location = db.query(LocationModel).filter(LocationModel.id == location_id).first()
+    location = db.query(LocationModel).filter(
+        LocationModel.id == location_id,
+        LocationModel.user_id == current_user.id
+    ).first()
     if not location:
         raise HTTPException(status_code=404, detail="Location not found")
 
@@ -64,6 +68,7 @@ def get_location(location_id: int, db: Session = Depends(get_db), current_user: 
         "longitude": location.longitude,
         "description": location.description,
         "address": location.address,
+        "user_id": location.user_id,
         "created_at": location.created_at,
         "updated_at": location.updated_at,
         "observation_count": observation_count
@@ -71,7 +76,7 @@ def get_location(location_id: int, db: Session = Depends(get_db), current_user: 
 
 @router.post("", response_model=Location, status_code=201)
 def create_location(location: LocationCreate, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
-    db_location = LocationModel(**location.model_dump())
+    db_location = LocationModel(**location.model_dump(), user_id=current_user.id)
     db.add(db_location)
     db.commit()
     db.refresh(db_location)
@@ -79,7 +84,10 @@ def create_location(location: LocationCreate, db: Session = Depends(get_db), cur
 
 @router.put("/{location_id}", response_model=Location)
 def update_location(location_id: int, location: LocationUpdate, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
-    db_location = db.query(LocationModel).filter(LocationModel.id == location_id).first()
+    db_location = db.query(LocationModel).filter(
+        LocationModel.id == location_id,
+        LocationModel.user_id == current_user.id
+    ).first()
     if not db_location:
         raise HTTPException(status_code=404, detail="Location not found")
 
@@ -93,7 +101,10 @@ def update_location(location_id: int, location: LocationUpdate, db: Session = De
 
 @router.delete("/{location_id}", status_code=204)
 def delete_location(location_id: int, db: Session = Depends(get_db), current_user: UserModel = Depends(get_current_user)):
-    db_location = db.query(LocationModel).filter(LocationModel.id == location_id).first()
+    db_location = db.query(LocationModel).filter(
+        LocationModel.id == location_id,
+        LocationModel.user_id == current_user.id
+    ).first()
     if not db_location:
         raise HTTPException(status_code=404, detail="Location not found")
 
