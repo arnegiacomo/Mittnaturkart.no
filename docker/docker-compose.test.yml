@@ -28,6 +28,7 @@ services:
       POSTGRES_HOST: postgres-test
       POSTGRES_PORT: 5432
       SECRET_KEY: test_secret_key
+      JWT_ISSUER: mittnaturkart-test-api
       KEYCLOAK_SERVER_URL: http://localhost:8080/keycloak
       KEYCLOAK_PUBLIC_URL: http://localhost:8080/keycloak
       KEYCLOAK_REALM: test
