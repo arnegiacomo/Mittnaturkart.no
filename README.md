@@ -1,9 +1,9 @@
 # Mittnaturkart.no
-Kildekode til nettstedet mittnaturkart.no
+Kildekode til nettstedet [mittnaturkart.no](https://mittnaturkart.no)
 
 ## Kom i gang
 
-Start applikasjonen med Docker:
+Start applikasjonen med Docker (anbefalt):
 ```bash
 ./start.sh
 ```
@@ -13,23 +13,9 @@ Stopp applikasjonen:
 ./stop.sh
 ```
 
-### Lokal utvikling
-
-Kjør backend lokalt (krever Python 3.12+ og PostgreSQL):
-```bash
-cd backend
-./dev.sh
-```
-
-Kjør frontend lokalt (krever Node.js 20+):
-```bash
-cd frontend
-./dev.sh
-```
-
 ## Testing
 
-Kjør alle tester:
+Kjør test-suitte:
 ```bash
 ./test.sh
 ```
@@ -50,8 +36,14 @@ Automatisk testing og versjonering ved push til main. Versjon bumpes basert på 
 - **Database**: PostgreSQL
 - **Autentisering**: Keycloak
 - **Reverse proxy**: Nginx
+- **Containerisering**: Docker + Docker Compose
+- **Domene/HTTPS**: Cloudflare (DNS, SSL, Tunnel)
+
+Trafikk (i prod) går via Cloudflare Edge → Tunnel → Nginx → tjenester. Ingen åpne porter eller manuell sertifikathåndtering.
 
 Tilgjengelig på `http://localhost` (frontend), `/api/v1/...` (API), og `/authentication` (Keycloak).
+
+[API-dokumentasjon (Swagger)](https://mittnaturkart.no/docs)
 
 ## Konfigurasjon
 
@@ -84,7 +76,12 @@ KEYCLOAK_CLIENT_SECRET=change_me_in_production
 
 ## Produksjon
 
-Sett `CLOUDFLARE_ENABLED=true` og `CLOUDFLARE_TUNNEL_TOKEN` i `.env` for å aktivere Cloudflare Tunnel med automatisk HTTPS.
+Kjører på en **Raspberry Pi 5** med Docker og Cloudflare Tunnel for HTTPS.
+
+![Raspberry Pi 5 setup](docs/pi.png)
+*Her kjører nettstedet ved siden av min ruter og mitt pi-hole*
+
+Sett `CLOUDFLARE_ENABLED=true` og `CLOUDFLARE_TUNNEL_TOKEN` i `.env` for å aktivere tunnelen.
 
 ## Fremtidige planer
 
@@ -98,5 +95,7 @@ Sett `CLOUDFLARE_ENABLED=true` og `CLOUDFLARE_TUNNEL_TOKEN` i `.env` for å akti
 - Integrasjon med Artsobservasjoner (import/eksport)
 
 ---
+
+Laget og vedlikeholdt av **Arne Giacomo Munthe-Kaas**, kjører på egen maskinvare.
 
 Bygget med hjelp fra [Claude Code](https://claude.com/product/claude-code)
