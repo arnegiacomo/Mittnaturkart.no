@@ -47,11 +47,11 @@ async def auth_callback(
     keycloak_access_token = keycloak_tokens["access_token"]
 
     user_info = await get_user_info(keycloak_access_token)
-    logger.info(f"User info from Keycloak: sub={user_info['sub']}, email={user_info.get('email')}, name={user_info.get('name')}")
+    logger.info(f"User info from Keycloak: {user_info}")
 
     keycloak_id = user_info["sub"]
     email = user_info.get("email")
-    name = user_info.get("name", email)
+    name = user_info.get("username", email)
 
     if not email:
         logger.error(f"Email not provided by Keycloak for sub={keycloak_id}")
@@ -77,9 +77,9 @@ async def auth_callback(
         logger.info(f"New user created: id={user.id}, email={email}, keycloak_id={keycloak_id}")
 
     access_token = create_access_token(
-        data={"sub": str(user.id), "email": user.email}
+        data={"sub": str(user.id), "email": user.email, "username": user.name}
     )
-    logger.info(f"JWT token issued for user: id={user.id}, email={user.email}")
+    logger.info(f"JWT token issued for user: id={user.id}, email={user.email}, username={user.name}")
 
     expires_in_seconds = settings.access_token_expire_days * 24 * 60 * 60
 
