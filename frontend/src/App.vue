@@ -23,14 +23,17 @@ const locationStore = useLocationStore()
 const authStore = useAuthStore()
 
 const isAuthCallback = computed(() => window.location.pathname === '/auth/callback')
+const isInitializing = ref(true)
 
 onMounted(async () => {
   await authStore.initialize()
 
-  // Redirect to login if not authenticated and not on auth callback page
   if (!authStore.isAuthenticated && !isAuthCallback.value) {
     await authStore.login()
+    return
   }
+
+  isInitializing.value = false
 })
 
 // Refresh data when switching tabs
@@ -50,6 +53,9 @@ watch(activeTab, async (newTab) => {
     <Toast />
     <ConfirmDialog />
     <AuthCallback v-if="isAuthCallback" />
+    <div v-else-if="isInitializing" class="loading">
+      <div class="spinner"></div>
+    </div>
     <template v-else>
       <header class="header">
         <div class="header-content">
@@ -86,6 +92,26 @@ watch(activeTab, async (newTab) => {
 .app {
   min-height: 100vh;
   background: #f8f9fa;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .header {
