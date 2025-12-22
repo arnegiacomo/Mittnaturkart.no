@@ -52,14 +52,9 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
-    user.value = null
-    token.value = null
-    tokenExpiry.value = null
-
+    const logoutUrl = await authApi.getLogoutUrl()
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(TOKEN_EXPIRY_KEY)
-
-    const logoutUrl = await authApi.getLogoutUrl()
     window.location.href = logoutUrl
   }
 

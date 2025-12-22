@@ -5,7 +5,13 @@
   },
   "navigation": {
     "observations": "Observasjoner",
-    "locations": "Steder"
+    "locations": "Steder",
+    "account": "Konto"
+  },
+  "account": {
+    "title": "Konto",
+    "name": "Navn",
+    "email": "E-post"
   },
   "common": {
     "save": "Lagre",

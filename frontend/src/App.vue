@@ -9,7 +9,7 @@ import ConfirmDialog from 'primevue/confirmdialog'
 import Toast from 'primevue/toast'
 import ObservationList from './components/ObservationList.vue'
 import LocationList from './components/LocationList.vue'
-import UserMenu from './components/UserMenu.vue'
+import AccountPanel from './components/AccountPanel.vue'
 import AuthCallback from './components/AuthCallback.vue'
 import { useObservationStore } from './stores/observations'
 import { useLocationStore } from './stores/locations'
@@ -59,17 +59,15 @@ watch(activeTab, async (newTab) => {
     <template v-else>
       <header class="header">
         <div class="header-content">
-          <div class="header-text">
-            <h1>{{ t('app.title') }}</h1>
-            <p>{{ t('app.subtitle') }}</p>
-          </div>
-          <UserMenu />
+          <h1>{{ t('app.title') }}</h1>
+          <p>{{ t('app.subtitle') }}</p>
         </div>
       </header>
       <Tabs v-model:value="activeTab" class="tabs">
         <TabList>
           <Tab value="0">{{ t('navigation.observations') }}</Tab>
           <Tab value="1">{{ t('navigation.locations') }}</Tab>
+          <Tab value="2">{{ t('navigation.account') }}</Tab>
         </TabList>
         <TabPanels>
           <TabPanel value="0">
@@ -80,6 +78,11 @@ watch(activeTab, async (newTab) => {
           <TabPanel value="1">
             <div class="content">
               <LocationList />
+            </div>
+          </TabPanel>
+          <TabPanel value="2">
+            <div class="content">
+              <AccountPanel />
             </div>
           </TabPanel>
         </TabPanels>
@@ -121,16 +124,9 @@ watch(activeTab, async (newTab) => {
 }
 
 .header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   max-width: 1400px;
   margin: 0 auto;
-}
-
-.header-text {
   text-align: center;
-  flex: 1;
 }
 
 .header h1 {
