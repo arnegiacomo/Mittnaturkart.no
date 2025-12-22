@@ -186,6 +186,30 @@ watch(activeTab, async (newTab) => {
   margin: 0 auto;
   padding: 0 2rem 2rem;
 }
+
+@media (max-width: 640px) {
+  .header {
+    padding: 1rem;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .tabs :deep(.p-tablist) {
+    padding: 0;
+  }
+
+  .tabs :deep(.p-tab) {
+    flex: 1;
+    justify-content: center;
+    padding: 0.75rem 0.5rem;
+  }
+
+  .content {
+    padding: 0 0.75rem 1rem;
+  }
+}
 </style>
 
 <style>

@@ -172,7 +172,7 @@ function handleClose() {
     :visible="visible"
     @update:visible="(val) => !val && handleClose()"
     :header="observation ? t('observations.edit') : t('observations.new')"
-    :style="{ width: '500px' }"
+    class="observation-dialog"
     modal
     dismissableMask
   >
@@ -303,5 +303,12 @@ function handleClose() {
   font-size: 0.875rem;
   margin-top: 0.25rem;
   display: block;
+}
+</style>
+
+<style>
+.observation-dialog {
+  width: 500px;
+  max-width: calc(100% - 2rem);
 }
 </style>

@@ -31,14 +31,16 @@ const columns: TableColumn<LocationWithCount>[] = [
     field: 'address',
     header: t('locations.columns.address'),
     sortable: true,
-    formatter: (data: LocationWithCount) => data.address || '-'
+    formatter: (data: LocationWithCount) => data.address || '-',
+    mobileHidden: true
   },
   {
     header: t('locations.columns.coordinates'),
     formatter: (data: LocationWithCount) => {
       if (!data.latitude || !data.longitude) return '-'
       return `${data.latitude.toFixed(4)}, ${data.longitude.toFixed(4)}`
-    }
+    },
+    mobileHidden: true
   },
   {
     field: 'observation_count',
@@ -49,7 +51,8 @@ const columns: TableColumn<LocationWithCount>[] = [
   {
     field: 'description',
     header: t('locations.columns.description'),
-    formatter: (data: LocationWithCount) => data.description || '-'
+    formatter: (data: LocationWithCount) => data.description || '-',
+    mobileHidden: true
   }
 ]
 

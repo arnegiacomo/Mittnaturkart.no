@@ -27,7 +27,7 @@ const sortOrder = ref('desc')
 
 const columns: TableColumn<Observation>[] = [
   { field: 'species', header: t('observations.columns.species'), sortable: true },
-  { field: 'category', header: t('observations.columns.category'), sortable: true },
+  { field: 'category', header: t('observations.columns.category'), sortable: true, mobileHidden: true },
   {
     field: 'date',
     header: t('observations.columns.date_time'),
@@ -40,7 +40,8 @@ const columns: TableColumn<Observation>[] = [
   {
     field: 'notes',
     header: t('observations.columns.notes'),
-    formatter: (data: Observation) => data.notes || '-'
+    formatter: (data: Observation) => data.notes || '-',
+    mobileHidden: true
   }
 ]
 
