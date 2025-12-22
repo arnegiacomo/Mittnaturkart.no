@@ -28,16 +28,16 @@ cd frontend
 ```
 
 ## Testing
-Tester kjøres gjennom en egen Docker Compose-konfigurasjon. Dette lar oss teste både API og frontend i et isolert miljø, og sikrer at testene kjører mot samme oppsett som produksjon, slik at vi dekker en så stor del av verdikjeden som mulig.
 
-Kjør alle tester (API + E2E):
+Kjør alle tester:
 ```bash
 ./test.sh
 ```
 
-Testene inkluderer:
-- **API-tester**: Tester backend endpoints med HTTP-kall
-- **E2E-tester**: Playwright-baserte tester av frontend (klikk, input, etc.)
+Tester kjøres i Docker mot et isolert miljø:
+- **Unit-tester**: pytest (backend)
+- **API-tester**: HTTP-kall (backend, db)
+- **E2E-tester**: Playwright (frontend, backend, db)
 
 ## CI/CD
 
@@ -45,13 +45,13 @@ Automatisk testing og versjonering ved push til main. Versjon bumpes basert på 
 
 ## Arkitektur
 
-Applikasjonen bruker Nginx som reverse proxy:
-- **Nginx** (port 80): Reverse proxy som håndterer alle innkommende forespørsler
-- **Frontend** (Vue 3 + Vite): Brukergrensesnitt for naturobservasjoner
-- **Backend API** (port 8000): FastAPI backend, tilgjengelig kun via Nginx
-- **PostgreSQL** (port 5432): Database
+- **Frontend**: Vue 3 + TypeScript + Vite
+- **Backend**: Python + FastAPI
+- **Database**: PostgreSQL
+- **Autentisering**: Keycloak
+- **Reverse proxy**: Nginx
 
-Frontend er tilgjengelig på `http://localhost` og API på `http://localhost/api/v1/...` gjennom Nginx.
+Tilgjengelig på `http://localhost` (frontend), `/api/v1/...` (API), og `/authentication` (Keycloak).
 
 ## Konfigurasjon
 
@@ -73,7 +73,25 @@ FRONTEND_PORT=5173
 
 # Nginx Configuration
 NGINX_PORT=80
+
+# Keycloak Configuration
+KEYCLOAK_ADMIN_PASSWORD=change_me_in_production
+KEYCLOAK_PUBLIC_URL=http://localhost/authentication
+KEYCLOAK_REALM=mittnaturkart
+KEYCLOAK_CLIENT_ID=mittnaturkart-client
+KEYCLOAK_CLIENT_SECRET=change_me_in_production
 ```
+
+## Fremtidige planer
+
+- Dele lokasjoner med andre brukere
+- Velge lokasjon via kart (Google Maps e.l.)
+- Egendefinert Keycloak-tema
+- Integrasjon med artsdatabaser/API-er
+- Bildeopplasting og telling
+- Sosiale funksjoner (venner, feed)
+- Datavisualisering
+- Integrasjon med Artsobservasjoner (import/eksport)
 
 ---
 

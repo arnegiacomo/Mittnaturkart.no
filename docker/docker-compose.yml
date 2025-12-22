@@ -50,6 +50,52 @@ services:
         reservations:
           memory: 256M
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4.7
+    container_name: mittnaturkart-keycloak
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB}
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KC_DB_SCHEMA: keycloak
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: ${KEYCLOAK_PUBLIC_URL}
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_RELATIVE_PATH: /authentication
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_ENABLED: true
+    expose:
+      - "8080"
+    volumes:
+      - ./keycloak/realm-export.template.json:/opt/keycloak/realm-template/realm-export.template.json:ro
+      - ./keycloak/entrypoint.sh:/opt/keycloak/bin/entrypoint.sh:ro
+    entrypoint: ["/opt/keycloak/bin/entrypoint.sh"]
+    command:
+      - start
+      - --import-realm
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080;echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3;if [ $? -eq 0 ]; then echo 'Healthcheck Successful';exit 0;else echo 'Healthcheck Failed';exit 1;fi;"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
   frontend:
     build:
       context: ..
@@ -78,9 +124,6 @@ services:
       - "${NGINX_PORT:-80}:80"
     volumes:
       - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
-    depends_on:
-      - backend
-      - frontend
     deploy:
       resources:
         limits:

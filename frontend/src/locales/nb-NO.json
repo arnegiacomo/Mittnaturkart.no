@@ -5,7 +5,13 @@
   },
   "navigation": {
     "observations": "Observasjoner",
-    "locations": "Steder"
+    "locations": "Steder",
+    "account": "Konto"
+  },
+  "account": {
+    "title": "Konto",
+    "name": "Navn",
+    "email": "E-post"
   },
   "common": {
     "save": "Lagre",
@@ -93,6 +99,15 @@
       "error_update": "Kunne ikke oppdatere sted",
       "error_delete": "Kunne ikke slette stedet",
       "error_fetch": "Kunne ikke laste steder"
+    }
+  },
+  "auth": {
+    "login": "Logg inn",
+    "logout": "Logg ut",
+    "messages": {
+      "logging_in": "Logger inn...",
+      "no_code": "Ingen autoriseringskode funnet",
+      "callback_error": "Innlogging mislyktes. Vennligst prøv igjen."
     }
   },
   "confirmDialog": {

@@ -21,17 +21,6 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Cache Docker images
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-docker-${{ hashFiles('**/Dockerfile*') }}
-          restore-keys: |
-            ${{ runner.os }}-docker-
-
       - name: Check for frontend changes
         id: frontend_changes
         run: |
