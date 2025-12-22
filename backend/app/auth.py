@@ -54,7 +54,7 @@ def decode_access_token(token: str) -> Optional[TokenData]:
             return None
         user_id = UUID(user_id_str)
         return TokenData(user_id=user_id, email=email)
-    except JWTError as e:
+    except (JWTError, ValueError) as e:
         logger.error(f"JWT decode error: {type(e).__name__}: {str(e)}")
         return None
 

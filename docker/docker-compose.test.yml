@@ -59,6 +59,14 @@ services:
       - backend
       - frontend
 
+  unit-test-runner:
+    image: python:3.13-slim
+    container_name: mittnaturkart-unit-test-runner
+    working_dir: /app
+    volumes:
+      - ../backend:/app:ro
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && pytest"
+
   test-runner:
     build:
       context: ../tests
@@ -67,7 +75,10 @@ services:
     environment:
       API_URL: http://nginx
     depends_on:
-      - nginx
+      unit-test-runner:
+        condition: service_completed_successfully
+      nginx:
+        condition: service_started
 
   e2e-runner:
     build:

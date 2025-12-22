@@ -2,6 +2,14 @@
 
 echo "Starting test environment..."
 
+# Run unit tests
+echo ""
+echo "=========================================="
+echo "Running Unit Tests"
+echo "=========================================="
+docker compose --env-file .env -f docker/docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from unit-test-runner unit-test-runner
+UNIT_EXIT_CODE=$?
+
 # Run API tests
 echo ""
 echo "=========================================="
@@ -26,6 +34,12 @@ echo ""
 echo "=========================================="
 echo "Test Results"
 echo "=========================================="
+if [ $UNIT_EXIT_CODE -eq 0 ]; then
+    echo "✓ Unit Tests: PASSED"
+else
+    echo "✗ Unit Tests: FAILED"
+fi
+
 if [ $API_EXIT_CODE -eq 0 ]; then
     echo "✓ API Tests: PASSED"
 else
@@ -40,7 +54,7 @@ fi
 echo "=========================================="
 
 # Exit with error if any tests failed
-if [ $API_EXIT_CODE -ne 0 ] || [ $E2E_EXIT_CODE -ne 0 ]; then
+if [ $UNIT_EXIT_CODE -ne 0 ] || [ $API_EXIT_CODE -ne 0 ] || [ $E2E_EXIT_CODE -ne 0 ]; then
     exit 1
 fi
 
