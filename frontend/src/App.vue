@@ -50,7 +50,7 @@ watch(activeTab, async (newTab) => {
 
 <template>
   <div class="app">
-    <Toast />
+    <Toast position="bottom-right" />
     <ConfirmDialog />
     <AuthCallback v-if="isAuthCallback" />
     <div v-else-if="isInitializing" class="loading">
@@ -222,5 +222,36 @@ watch(activeTab, async (newTab) => {
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: #f8f9fa;
+}
+
+@media (max-width: 640px) {
+  .p-toast {
+    width: calc(100% - 1rem) !important;
+    max-width: none !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+  }
+
+  .p-toast-message {
+    margin: 0 0 0.5rem 0 !important;
+  }
+
+  .p-toast-message-content {
+    padding: 0.75rem !important;
+  }
+
+  .p-toast-message-text {
+    margin: 0 0 0 0.75rem !important;
+  }
+
+  .p-toast-summary {
+    font-size: 0.9rem !important;
+  }
+
+  .p-toast-detail {
+    font-size: 0.85rem !important;
+    word-break: break-word !important;
+  }
 }
 </style>
