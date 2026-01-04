@@ -1,6 +1,6 @@
 [project]
 name = "mittnaturkart"
-version = "0.9.2"
+version = "0.9.3"
 description = "Nature observation tracking application"
 requires-python = ">=3.13"
 
