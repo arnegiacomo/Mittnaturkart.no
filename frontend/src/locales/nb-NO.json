@@ -119,5 +119,9 @@
     "error": "Feil",
     "info": "Informasjon",
     "warn": "Advarsel"
+  },
+  "errors": {
+    "api_generic": "Noe gikk galt. Prøv igjen senere.",
+    "api_network": "Nettverksfeil"
   }
 }
