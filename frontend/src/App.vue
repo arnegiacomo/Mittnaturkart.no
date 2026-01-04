@@ -15,8 +15,12 @@ import { useObservationStore } from './stores/observations'
 import { useLocationStore } from './stores/locations'
 import { useAuthStore } from './stores/auth'
 import { useI18n } from './composables/useI18n'
+import { useToast } from 'primevue/usetoast'
+import { initToast } from './services/toastService'
 
 const { t } = useI18n()
+const toast = useToast()
+initToast(toast)
 const activeTab = ref('0')
 const observationStore = useObservationStore()
 const locationStore = useLocationStore()

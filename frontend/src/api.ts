@@ -1,5 +1,7 @@
 import axios from 'axios'
 import type { Observation, Location, LocationWithCount, PaginatedResponse, User, AuthToken } from './types'
+import { showError } from './services/toastService'
+import { t } from './i18n'
 
 const TOKEN_KEY = 'auth_token'
 const TOKEN_EXPIRY_KEY = 'auth_token_expiry'
@@ -31,6 +33,8 @@ api.interceptors.response.use(
       if (window.location.pathname !== '/auth/callback') {
         window.location.href = '/'
       }
+    } else if (error.request) {
+      showError(t('errors.api_network'))
     }
     return Promise.reject(error)
   }
