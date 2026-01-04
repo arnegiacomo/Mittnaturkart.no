@@ -5,7 +5,8 @@ const TOKEN_KEY = 'auth_token'
 const TOKEN_EXPIRY_KEY = 'auth_token_expiry'
 
 const api = axios.create({
-  baseURL: '/api/v1'
+  baseURL: '/api/v1',
+  timeout: 15000
 })
 
 api.interceptors.request.use((config) => {
